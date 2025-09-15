@@ -1,0 +1,22 @@
+{
+  "name": "stremio-mdl",
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:server": "npm --workspace server run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aquelemiguel/stremio-mdl.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aquelemiguel/stremio-mdl/issues"
+  },
+  "homepage": "https://github.com/aquelemiguel/stremio-mdl#readme",
+  "description": ""
+}
