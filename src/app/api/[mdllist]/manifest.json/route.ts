@@ -1,4 +1,5 @@
-import { BASE_MANIFEST } from "@/lib/manifest";
+import { buildManifest } from "@/lib/manifest";
+import { getListTitle } from "@/lib/parsers/mdl";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {
@@ -8,16 +9,15 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400",
 };
 
-export async function GET() {
-  const unlockedManifest = {
-    ...BASE_MANIFEST,
-    behaviorHints: {
-      ...BASE_MANIFEST.behaviorHints,
-      configurationRequired: false,
-    },
-  };
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ mdllist: string }> }
+) {
+  const { mdllist } = await params;
+  const listTitle = await getListTitle(mdllist);
+  const manifest = await buildManifest(listTitle);
 
-  return NextResponse.json(unlockedManifest, {
+  return NextResponse.json(manifest, {
     headers: CORS_HEADERS,
   });
 }

@@ -1,6 +1,16 @@
 import * as cheerio from "cheerio";
 import type { MetaPreview } from "stremio-addon-sdk";
 
+export async function getListTitle(mdlId: string) {
+  const res = await fetch(`https://mydramalist.com/list/${mdlId}`);
+  if (!res.ok) {
+    throw new Error(`failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  return $("header > h1").text();
+}
+
 export async function getListEntries(mdllist: string) {
   if (!mdllist) {
     throw new Error("missing mdllist, configure addon");

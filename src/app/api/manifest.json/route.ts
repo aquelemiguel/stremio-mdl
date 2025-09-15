@@ -1,4 +1,4 @@
-import { BASE_MANIFEST } from "@/lib/manifest";
+import { buildManifest } from "@/lib/manifest";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {
@@ -9,7 +9,9 @@ const CORS_HEADERS = {
 };
 
 export async function GET() {
-  return NextResponse.json(BASE_MANIFEST, {
+  const manifest = await buildManifest();
+
+  return NextResponse.json(manifest, {
     headers: CORS_HEADERS,
   });
 }
