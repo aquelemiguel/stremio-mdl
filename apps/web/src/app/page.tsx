@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { Check, XIcon } from "lucide-react";
+import { Check, Clipboard, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
   const [isValidating, setIsValidating] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [error, setError] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   const [meta, setMeta] = useState<{
     title: string;
@@ -58,6 +59,17 @@ export default function Home() {
     setMdlList(match ? match[1] : "");
   };
 
+  const onClipboard = async () => {
+    await navigator.clipboard.writeText(
+      `stremio://localhost:8080/${mdlList}/manifest.json`
+    );
+    setIsCopied(true);
+
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 5000);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
@@ -86,16 +98,23 @@ export default function Home() {
           </p>
         )}
 
-        <Button
-          className="mt-6 w-full"
-          onClick={onInstall}
-          disabled={!canInstall}
-        >
-          <div className="flex items-center justify-center gap-2">
-            {isValidating && <Spinner />}
-            Install addon
-          </div>
-        </Button>
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <Button className="flex-1" onClick={onInstall} disabled={!canInstall}>
+            <div className="flex items-center justify-center gap-2">
+              {isValidating && <Spinner />}
+              Install addon
+            </div>
+          </Button>
+          <Button
+            className="cursor-pointer"
+            variant="outline"
+            size="icon"
+            onClick={onClipboard}
+            disabled={!canInstall}
+          >
+            {isCopied ? <Check /> : <Clipboard />}
+          </Button>
+        </div>
       </div>
     </div>
   );
