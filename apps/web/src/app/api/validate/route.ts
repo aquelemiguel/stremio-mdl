@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as cheerio from "cheerio";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,9 +13,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const res = await fetch(`https://mydramalist.com/list/${mdl}`, {
-      method: "HEAD",
-    });
+    const res = await fetch(`https://mydramalist.com/list/${mdl}`);
     if (res.status === 404) {
       return NextResponse.json(
         { valid: false, error: "Could not find list!" },
@@ -27,7 +26,20 @@ export async function GET(request: Request) {
         { status: res.status }
       );
     }
-    return NextResponse.json({ valid: true });
+
+    const $ = cheerio.load(await res.text());
+    const match = $("title")
+      .text()
+      .match(/(.+) \((\d+) shows\)/);
+    const [, title, itemTotal] = match || [];
+
+    return NextResponse.json({
+      valid: true,
+      meta: {
+        title,
+        total: itemTotal ? parseInt(itemTotal, 10) : 0,
+      },
+    });
   } catch (_err) {
     return NextResponse.json(
       { valid: false, error: "Network error" },

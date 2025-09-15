@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { CircleCheck, CircleX } from "lucide-react";
+import { Check, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -12,21 +12,30 @@ export default function Home() {
   const [canInstall, setCanInstall] = useState(false);
   const [error, setError] = useState("");
 
+  const [meta, setMeta] = useState<{
+    title: string;
+    total: number;
+  } | null>(null);
+
   useEffect(() => {
     setCanInstall(false);
 
     if (!mdlList) {
-      return setIsValidating(false);
+      setMeta(null);
+      setIsValidating(false);
+      return;
     }
 
     setIsValidating(true);
+    setMeta(null);
 
     const timeout = setTimeout(async () => {
       try {
         const res = await fetch(`/api/validate?mdl=${mdlList}`);
-        const { valid, error } = await res.json();
+        const { valid, error, meta } = await res.json();
         setCanInstall(valid);
         setError(error);
+        setMeta(meta || null);
       } catch (err) {
         setCanInstall(false);
       } finally {
@@ -49,26 +58,6 @@ export default function Home() {
     setMdlList(match ? match[1] : "");
   };
 
-  const status = isValidating
-    ? {
-        icon: <Spinner size={16} />,
-        text: `Validating ${mdlList}...`,
-        color: "text-gray-700",
-      }
-    : canInstall
-    ? {
-        icon: <CircleCheck size={16} color="green" />,
-        text: "Good!",
-        color: "text-green-700",
-      }
-    : error
-    ? {
-        icon: <CircleX size={16} color="red" />,
-        text: error,
-        color: "text-red-700",
-      }
-    : null;
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
@@ -83,13 +72,18 @@ export default function Home() {
           onChange={onChange}
         />
 
-        {status && (
-          <div className="flex items-center gap-2 mt-3">
-            {status.icon}
-            <span className={`text-sm font-semibold ${status.color}`}>
-              {status.text}
-            </span>
-          </div>
+        {meta && (
+          <p className="flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
+            <Check size={12} color="green" />
+            {meta.title} ({meta.total} shows)
+          </p>
+        )}
+
+        {error && (
+          <p className="flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
+            <XIcon size={12} color="red" />
+            {error}
+          </p>
         )}
 
         <Button
@@ -97,7 +91,10 @@ export default function Home() {
           onClick={onInstall}
           disabled={!canInstall}
         >
-          Install
+          <div className="flex items-center justify-center gap-2">
+            {isValidating && <Spinner />}
+            Install addon
+          </div>
         </Button>
       </div>
     </div>
