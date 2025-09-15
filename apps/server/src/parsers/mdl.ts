@@ -1,8 +1,10 @@
 import * as cheerio from "cheerio";
 import type { MetaPreview } from "stremio-addon-sdk";
 
-export async function getListEntries() {
-  const res = await fetch("https://mydramalist.com/list/3EEVm9b3");
+export async function getListEntries(mdllist: string = "3EEVm9b3") {
+  const url = `https://mydramalist.com/list/${mdllist}`;
+
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`failed to fetch: ${res.status}`);
   }
@@ -17,6 +19,7 @@ export async function getListEntries() {
     poster = poster.replace("_4t", "_4c"); // up the quality
 
     // cinemeta search
+    // todo: use https://github.com/Ivshti/name-to-imdb
     const res = await fetch(
       "https://v3-cinemeta.strem.io/catalog/series/top/search=" +
         encodeURIComponent(name) +
