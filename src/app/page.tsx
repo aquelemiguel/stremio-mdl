@@ -37,7 +37,7 @@ export default function Home() {
         setCanInstall(valid);
         setError(error);
         setMeta(meta || null);
-      } catch (err) {
+      } catch {
         setCanInstall(false);
       } finally {
         setIsValidating(false);
@@ -49,7 +49,7 @@ export default function Home() {
 
   const onInstall = () => {
     if (mdlList) {
-      window.location.href = `stremio://localhost:8080/${mdlList}/manifest.json`;
+      window.location.href = `stremio://localhost:3000/api/${mdlList}/manifest.json`;
     }
   };
 
@@ -61,7 +61,7 @@ export default function Home() {
 
   const onClipboard = async () => {
     await navigator.clipboard.writeText(
-      `stremio://localhost:8080/${mdlList}/manifest.json`
+      `stremio://localhost:3000/api/${mdlList}/manifest.json`
     );
     setIsCopied(true);
 

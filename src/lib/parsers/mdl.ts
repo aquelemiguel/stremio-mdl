@@ -7,7 +7,7 @@ export async function getListEntries(mdllist: string) {
   }
 
   let page = 1;
-  let metas: MetaPreview[] = [];
+  const metas: MetaPreview[] = [];
 
   while (true) {
     const url = `https://mydramalist.com/list/${mdllist}?page=${page}`;
