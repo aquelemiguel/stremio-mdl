@@ -19,13 +19,10 @@ app.use(
 const manifest = {
   id: "org.aquelemiguel.stremio-mdl",
   version: "1.0.0",
-
   name: "MyDramaList Catalog",
   description: "Add MyDramaList lists as Stremio catalogs",
-
   resources: ["catalog"], // todo: revisit this later
   types: ["series"], // todo: revisit this later
-
   catalogs: [
     {
       id: "mydramalist",
@@ -33,14 +30,7 @@ const manifest = {
       name: "Test MyDramaList catalog!!!",
     },
   ],
-
-  config: [
-    {
-      key: "mdllist",
-      type: "text",
-    },
-  ],
-
+  config: [{ key: "mdllist", type: "text" }],
   behaviorHints: {
     configurable: true,
     configurationRequired: true,
@@ -48,14 +38,11 @@ const manifest = {
 } satisfies Manifest;
 
 app.get("/configure", (c) => c.redirect("http://localhost:3000"));
-app.get("/:prefix/configure", (c) => c.redirect("http://localhost:3000"));
+app.get("/:config*/configure", (c) => c.redirect("http://localhost:3000"));
 
 app.get("/manifest.json", (c) => c.json(manifest));
 
 app.get("/:mdllist/manifest.json", (c) => {
-  const { mdllist } = c.req.param();
-  console.log(`Installing addon with MDL list: ${mdllist}`);
-
   const customManifest = {
     ...manifest,
     behaviorHints: {
@@ -78,10 +65,6 @@ app.get("/:mdllist/catalog/:type/:id/:extra?.json", async (c) => {
     extra = extra.replace(/\.json$/, "");
   }
 
-  console.log(
-    `Handling catalog request with config: mdllist=${mdllist}, type=${type}, id=${id}`
-  );
-
   const result = await catalogHandler({
     type,
     id,
@@ -98,7 +81,6 @@ app.get("/:mdllist/catalog/:type/:id/:extra?.json", async (c) => {
   return c.json(result);
 });
 
-// Keep the original route for testing/compatibility
 app.get("/catalog/:type/:id/:extra?.json", async (c) => {
   const type = c.req.param("type");
   const id = c.req.param("id");
@@ -128,10 +110,6 @@ app.get("/:mdllist/catalog/:type/:id.json", async (c) => {
   const idWithJson = c.req.param("id.json");
   const id = idWithJson.replace(/\.json$/, "");
 
-  console.log(
-    `Handling legacy catalog request with config: mdllist=${mdllist}, type=${type}, id=${id}`
-  );
-
   const result = await catalogHandler({
     type,
     id,
@@ -146,7 +124,6 @@ app.get("/:mdllist/catalog/:type/:id.json", async (c) => {
   return c.json(result);
 });
 
-// Keep the original route for testing/compatibility
 app.get("/catalog/:type/:id.json", async (c) => {
   const type = c.req.param("type");
   const idWithJson = c.req.param("id.json");
