@@ -48,7 +48,7 @@ export default function Home() {
 
   const onInstall = () => {
     if (mdlList) {
-      window.location.href = `stremio://localhost:3000/api/${mdlList}/manifest.json`;
+      window.location.href = `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`;
     }
   };
 
@@ -59,7 +59,7 @@ export default function Home() {
   };
 
   const onWebInstall = async () => {
-    const addonUrl = `stremio://localhost:3000/api/${mdlList}/manifest.json`;
+    const addonUrl = `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`;
     open(
       `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
     );
@@ -67,7 +67,7 @@ export default function Home() {
 
   const onClipboard = async () => {
     await navigator.clipboard.writeText(
-      `stremio://localhost:3000/api/${mdlList}/manifest.json`
+      `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`
     );
     setIsCopied(true);
 

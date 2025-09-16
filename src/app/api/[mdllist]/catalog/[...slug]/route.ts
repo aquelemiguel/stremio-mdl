@@ -104,7 +104,7 @@ async function handleCatalogRequest(
     } = parseRouteParams(slug, mdllist);
 
     if (type === "configure") {
-      return NextResponse.redirect("http://localhost:3000");
+      return NextResponse.redirect("https://mydramalist.mano.sh");
     }
 
     const result = await catalogHandler({
