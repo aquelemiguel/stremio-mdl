@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Max-Age": "86400",
-};
-
 function createResponse(data: unknown, status = 200) {
   return NextResponse.json(data, {
     status,
-    headers: CORS_HEADERS,
   });
 }
 

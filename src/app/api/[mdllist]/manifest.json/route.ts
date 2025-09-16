@@ -21,10 +21,3 @@ export async function GET(
     headers: CORS_HEADERS,
   });
 }
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: CORS_HEADERS,
-  });
-}

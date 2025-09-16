@@ -119,7 +119,7 @@ export default function Home() {
             </div>
           </Button>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 className="cursor-pointer"
                 variant="outline"
@@ -133,7 +133,7 @@ export default function Home() {
             <TooltipContent>Install on the web</TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 className="cursor-pointer"
                 variant="outline"
