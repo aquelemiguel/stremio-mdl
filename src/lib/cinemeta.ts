@@ -29,8 +29,11 @@ export async function searchCinemeta(
   itemUrl?: string
 ): Promise<string> {
   const url = `https://v3-cinemeta.strem.io/catalog/${type}/top`;
+  const sanitized = query.replace(/[^\w\s]|_/g, "");
 
-  const res = await fetch(`${url}/search=${encodeURIComponent(query)}.json`);
+  const res = await fetch(
+    `${url}/search=${encodeURIComponent(sanitized)}.json`
+  );
   if (!res.ok) {
     throw new Error(`failed to fetch: ${res.status}`);
   }
@@ -61,6 +64,5 @@ export async function searchCinemeta(
       }
     }
   }
-
   return fallback;
 }
