@@ -1,9 +1,25 @@
-# stremio-mdl
+<h1 align="center">stremio-mdl</h1>
+
+<div align="center">
+  <a href="https://github.com/aquelemiguel/stremio-mdl/issues">
+    <img src="https://img.shields.io/github/issues/aquelemiguel/stremio-mdl" alt="GitHub issues" />
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/github/contributors/aquelemiguel/stremio-mdl" alt="GitHub contributors" />
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/github/stars/aquelemiguel/stremio-mdl" alt="GitHub stars" />
+  </a>
+  <a href="https://mydramalist.mano.sh">
+    <img src="https://img.shields.io/badge/Open%20in-Stremio-FF3D00?logo=stremio" alt="Open in Stremio" />
+  </a>
+  <a href="https://buymeacoffee.com/aquelemiguel">
+    <img src="https://img.shields.io/badge/Buy%20Me%20A-Coffee-FFEE00?logo=buy-me-a-coffee" alt="Buy Me A Coffee" />
+  </a>
+</div>
+<br/>
 
 An addon for adding MyDramaList lists as Stremio catalogs.
-
-[![Open in Stremio](https://img.shields.io/badge/Open%20in-Stremio-FF3D00?logo=stremio)](https://mydramalist.mano.sh)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A-Coffee-FFEE00?logo=buy-me-a-coffee)](https://buymeacoffee.com/aquelemiguel)
 
 ![screenshot](./public/screenshots/example.png)
 
