@@ -5,6 +5,7 @@ const BASE_MANIFEST: Manifest = {
   version: "1.0.0",
   name: "MyDramaList Catalog",
   description: "Add MyDramaList lists as Stremio catalogs",
+  logo: "https://mydramalist.mano.sh/logo.png",
   contactEmail: "aquelemiguel@gmail.com",
   resources: ["catalog"],
   types: ["movie", "series"],

@@ -44,5 +44,7 @@
     "url": "https://github.com/aquelemiguel/stremio-mdl/issues"
   },
   "homepage": "https://github.com/aquelemiguel/stremio-mdl#readme",
-  "description": ""
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }
