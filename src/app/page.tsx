@@ -3,7 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { Check, Clipboard, XIcon } from "lucide-react";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { Check, Clipboard, Coffee, XIcon, Github, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -59,6 +61,13 @@ export default function Home() {
     setMdlList(match ? match[1] : "");
   };
 
+  const onWebInstall = async () => {
+    const addonUrl = `stremio://localhost:3000/api/${mdlList}/manifest.json`;
+    open(
+      `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
+    );
+  };
+
   const onClipboard = async () => {
     await navigator.clipboard.writeText(
       `stremio://localhost:3000/api/${mdlList}/manifest.json`
@@ -72,7 +81,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
         <h1 className="text-3xl font-bold text-center">stremio-mdl</h1>
         <p className="mt-1 text-center text-gray-600 font-medium">
           MyDramaList lists as Stremio catalogs
@@ -85,35 +94,85 @@ export default function Home() {
         />
 
         {meta && (
-          <p className="flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
+          <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
             <Check size={12} color="green" />
             {meta.title} ({meta.total} shows)
           </p>
         )}
 
         {error && (
-          <p className="flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
+          <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
             <XIcon size={12} color="red" />
             {error}
           </p>
         )}
 
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <Button className="flex-1" onClick={onInstall} disabled={!canInstall}>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <Button
+            className="flex-1 cursor-pointer"
+            onClick={onInstall}
+            disabled={!canInstall}
+          >
             <div className="flex items-center justify-center gap-2">
               {isValidating && <Spinner />}
               Install addon
             </div>
           </Button>
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            size="icon"
-            onClick={onClipboard}
-            disabled={!canInstall}
-          >
-            {isCopied ? <Check /> : <Clipboard />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                className="cursor-pointer"
+                variant="outline"
+                size="icon"
+                onClick={onWebInstall}
+                disabled={!canInstall}
+              >
+                <Globe />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Install on the web</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                className="cursor-pointer"
+                variant="outline"
+                size="icon"
+                onClick={onClipboard}
+                disabled={!canInstall}
+              >
+                {isCopied ? <Check /> : <Clipboard />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isCopied ? "Copied!" : "Copy to clipboard"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-8">
+            <a
+              href="https://github.com/aquelemiguel/stremio-mdl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+              title="View source on GitHub"
+            >
+              <Github size={16} />
+              <span className="text-xs">aquelemiguel</span>
+            </a>
+            <a
+              href="https://github.com/sponsors/aquelemiguel"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Support development"
+            >
+              <Coffee size={16} />
+              <span className="text-xs">Buy me a coffee</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

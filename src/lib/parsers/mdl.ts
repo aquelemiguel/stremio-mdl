@@ -34,7 +34,7 @@ export async function getListEntries(mdllist: string) {
       const name = $(el).find(".title > a").text();
 
       let poster = $(el).find("a.film-cover > img").attr("data-src") || "";
-      poster = poster.replace("_4t", "_4c"); // up the quality
+      poster = poster.replace("t.jpg", "f.jpg"); // up the quality
 
       // cinemeta search
       // todo: use https://github.com/Ivshti/name-to-imdb
