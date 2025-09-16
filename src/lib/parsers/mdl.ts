@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { MetaPreview } from "stremio-addon-sdk";
+import type { ContentType, MetaPreview } from "stremio-addon-sdk";
 import { searchCinemeta } from "../cinemeta";
 
 export type MdlSimpleListMeta = {
@@ -29,15 +29,33 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
 
     const promises = els.map(async (el) => {
       const name = $(el).find(".title > a").text();
+      const description = $(el)
+        .find(".content")
+        .children(":nth-child(2)")
+        .text();
+
+      const match = description.match(/(\w+)\s(\w+) - (\d+)/);
+      if (!match) {
+        throw new Error("Could not determine media type");
+      }
+
+      const typeMap: Record<string, ContentType> = {
+        drama: "series",
+        movie: "movie",
+        special: "series",
+      };
+
+      const [, , mdlType, releaseYear] = match;
+      const type = typeMap[mdlType.toLowerCase()] || "series";
 
       let poster = $(el).find("a.film-cover > img").attr("data-src") || "";
       poster = poster.replace("t.jpg", "f.jpg"); // up the quality
 
-      const imdbId = await searchCinemeta(name);
+      const id = await searchCinemeta(name, type, releaseYear);
 
       return {
-        id: imdbId,
-        type: "series" as const, // todo: handle this later on...
+        id,
+        type,
         name,
         poster,
       } satisfies MetaPreview;

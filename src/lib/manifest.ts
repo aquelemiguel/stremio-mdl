@@ -7,7 +7,7 @@ const BASE_MANIFEST: Manifest = {
   description: "Add MyDramaList lists as Stremio catalogs",
   contactEmail: "aquelemiguel@gmail.com",
   resources: ["catalog"],
-  types: ["series"],
+  types: ["movie", "series"],
   catalogs: [],
   config: [{ key: "mdllist", type: "text" }],
   behaviorHints: {

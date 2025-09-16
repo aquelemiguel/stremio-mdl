@@ -1,5 +1,11 @@
-export async function searchCinemeta(query: string): Promise<string> {
-  const url = "https://v3-cinemeta.strem.io/catalog/series/top";
+import { ContentType } from "stremio-addon-sdk";
+
+export async function searchCinemeta(
+  query: string,
+  type: ContentType,
+  releaseYear?: string
+): Promise<string> {
+  const url = `https://v3-cinemeta.strem.io/catalog/${type}/top`;
 
   const res = await fetch(`${url}/search=${encodeURIComponent(query)}.json`);
   if (!res.ok) {
@@ -7,5 +13,19 @@ export async function searchCinemeta(query: string): Promise<string> {
   }
 
   const data = await res.json();
-  return data.metas?.[0]?.imdb_id || "";
+
+  // todo: get original title name if nothing matches...
+
+  if (releaseYear) {
+    for (const meta of data.metas) {
+      if (
+        (meta.releaseInfo as string | undefined)?.startsWith(releaseYear) ||
+        meta.year === releaseYear
+      ) {
+        return meta.imdb_id;
+      }
+    }
+  }
+
+  return data.metas[0]?.imdb_id || "";
 }
