@@ -160,7 +160,7 @@ export default function Home() {
               <span className="text-xs">aquelemiguel</span>
             </a>
             <a
-              href="https://github.com/sponsors/aquelemiguel"
+              href="https://buymeacoffee.com/aquelemiguel"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
