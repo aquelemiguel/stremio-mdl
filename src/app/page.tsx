@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
 import { type MdlListMeta } from "@/lib/parsers/mdl";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { Check, Clipboard, Coffee, Github, Globe, XIcon } from "lucide-react";
@@ -48,7 +49,7 @@ export default function Home() {
 
   const onInstall = () => {
     if (mdlList) {
-      window.location.href = `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`;
+      window.location.href = getStremioDeepLink(mdlList);
     }
   };
 
@@ -59,16 +60,14 @@ export default function Home() {
   };
 
   const onWebInstall = async () => {
-    const addonUrl = `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`;
+    const addonUrl = getManifestUrl(mdlList);
     open(
       `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
     );
   };
 
   const onClipboard = async () => {
-    await navigator.clipboard.writeText(
-      `stremio://https://mydramalist.mano.sh/api/${mdlList}/manifest.json`
-    );
+    await navigator.clipboard.writeText(getManifestUrl(mdlList));
     setIsCopied(true);
 
     setTimeout(() => {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBaseUrl } from "@/lib/config";
 import { getListMeta } from "@/lib/parsers/mdl";
 
 interface CatalogArgs {
@@ -104,7 +105,7 @@ async function handleCatalogRequest(
     } = parseRouteParams(slug, mdllist);
 
     if (type === "configure") {
-      return NextResponse.redirect("https://mydramalist.mano.sh");
+      return NextResponse.redirect(getBaseUrl());
     }
 
     const result = await catalogHandler({

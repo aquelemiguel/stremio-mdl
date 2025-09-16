@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
+import { getBaseUrl } from "@/lib/config";
 
-export async function GET() {
-  return NextResponse.redirect("https://mydramalist.mano.sh");
+export function GET() {
+  return NextResponse.redirect(getBaseUrl());
 }
