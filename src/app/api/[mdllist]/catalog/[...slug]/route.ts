@@ -15,7 +15,7 @@ interface CatalogArgs {
 const catalogHandler = async (args: CatalogArgs) => {
   const mdllist = args.config?.mdllist || "";
   const { items } = await getListMeta(mdllist);
-  return { metas: items };
+  return { metas: items.map(({ meta }) => meta) };
 };
 
 const CORS_HEADERS = {

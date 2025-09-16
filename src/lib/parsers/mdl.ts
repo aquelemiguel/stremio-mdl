@@ -8,13 +8,22 @@ export type MdlSimpleListMeta = {
   totalItems: number;
 };
 
+export type MdlListItem = {
+  meta: MetaPreview;
+  url: string;
+};
+
 export type MdlListMeta = MdlSimpleListMeta & {
-  items: MetaPreview[];
+  items: MdlListItem[];
+};
+
+export type MdlContentMeta = {
+  originalTitle: string;
 };
 
 export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
   const simpleMeta = await getSimpleListMeta(mdlId);
-  const metas: MetaPreview[] = [];
+  const items: MdlListItem[] = [];
 
   for (let page = 1; (page - 1) * 100 <= simpleMeta.totalItems; page++) {
     const url = `https://mydramalist.com/list/${mdlId}?page=${page}`;
@@ -27,12 +36,13 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
     const $ = cheerio.load(await res.text());
     const els = $("li[id^='mdl']").toArray();
 
-    const promises = els.map(async (el) => {
+    const promises = els.map(async (el): Promise<MdlListItem> => {
       const name = $(el).find(".title > a").text();
       const description = $(el)
         .find(".content")
         .children(":nth-child(2)")
         .text();
+      const url = $(el).find(".title > a").attr("href") || "";
 
       const match = description.match(/(\w+)\s(\w+) - (\d+)/);
       if (!match) {
@@ -51,23 +61,26 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
       let poster = $(el).find("a.film-cover > img").attr("data-src") || "";
       poster = poster.replace("t.jpg", "f.jpg"); // up the quality
 
-      const id = await searchCinemeta(name, type, releaseYear);
+      const id = await searchCinemeta(name, type, releaseYear, url);
 
       return {
-        id,
-        type,
-        name,
-        poster,
-      } satisfies MetaPreview;
+        meta: {
+          id,
+          type,
+          name,
+          poster,
+        },
+        url,
+      };
     });
 
-    const pageMetas = await Promise.all(promises);
-    metas.push(...pageMetas);
+    const pageItems = await Promise.all(promises);
+    items.push(...pageItems);
   }
 
   return {
     ...simpleMeta,
-    items: metas,
+    items,
   };
 }
 
@@ -94,5 +107,19 @@ export async function getSimpleListMeta(
     type: type === "People" ? "people" : "shows",
     title,
     totalItems: parseInt(totalItems),
+  };
+}
+
+export async function getContentMeta(path: string): Promise<MdlContentMeta> {
+  const res = await fetch(`https://mydramalist.com${path}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  const originalTitle = $(".film-subtitle > span").text().split("‧")[0] || "";
+
+  return {
+    originalTitle,
   };
 }

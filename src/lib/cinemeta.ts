@@ -1,9 +1,32 @@
 import { ContentType } from "stremio-addon-sdk";
+import { getContentMeta } from "./parsers/mdl";
+
+type CinemetaResponse = {
+  metas: {
+    imdb_id: string;
+    releaseInfo?: string;
+    year?: string;
+  }[];
+};
+
+function findByReleaseYear(
+  metas: CinemetaResponse["metas"],
+  releaseYear?: string
+) {
+  if (!releaseYear) {
+    return null;
+  }
+  return metas.find(
+    (meta) =>
+      meta.releaseInfo?.startsWith(releaseYear) || meta.year === releaseYear
+  )?.imdb_id;
+}
 
 export async function searchCinemeta(
   query: string,
   type: ContentType,
-  releaseYear?: string
+  releaseYear?: string,
+  itemUrl?: string
 ): Promise<string> {
   const url = `https://v3-cinemeta.strem.io/catalog/${type}/top`;
 
@@ -12,20 +35,32 @@ export async function searchCinemeta(
     throw new Error(`failed to fetch: ${res.status}`);
   }
 
-  const data = await res.json();
+  const { metas }: CinemetaResponse = await res.json();
+  const fallback = metas[0]?.imdb_id || "";
 
-  // todo: get original title name if nothing matches...
+  const matched = findByReleaseYear(metas, releaseYear);
+  if (matched) {
+    return matched;
+  }
 
-  if (releaseYear) {
-    for (const meta of data.metas) {
-      if (
-        (meta.releaseInfo as string | undefined)?.startsWith(releaseYear) ||
-        meta.year === releaseYear
-      ) {
-        return meta.imdb_id;
+  if (itemUrl) {
+    const { originalTitle } = await getContentMeta(itemUrl);
+
+    if (originalTitle) {
+      const res = await fetch(
+        `${url}/search=${encodeURIComponent(originalTitle)}.json`
+      );
+      if (!res.ok) {
+        return fallback;
+      }
+
+      const { metas }: CinemetaResponse = await res.json();
+      const matched = findByReleaseYear(metas, releaseYear);
+      if (matched) {
+        return matched;
       }
     }
   }
 
-  return data.metas[0]?.imdb_id || "";
+  return fallback;
 }
