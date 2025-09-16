@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as cheerio from "cheerio";
+import { getSimpleListMeta } from "@/lib/parsers/mdl";
 
 function createResponse(data: unknown, status = 200) {
   return NextResponse.json(data, {
@@ -30,18 +30,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const $ = cheerio.load(await res.text());
-    const match = $("title")
-      .text()
-      .match(/(.+) \((\d+) shows\)/);
-    const [, title, itemTotal] = match || [];
+    const meta = await getSimpleListMeta(mdl);
+
+    // we only allow "shows" lists (reject e.g., "people" lists)
+    if (meta.type !== "shows") {
+      return NextResponse.json(
+        {
+          valid: false,
+          error: 'This list is disallowed. Make sure it is a "shows" list!',
+        },
+        { status: 400 }
+      );
+    }
 
     return createResponse({
       valid: true,
-      meta: {
-        title,
-        total: itemTotal ? parseInt(itemTotal, 10) : 0,
-      },
+      meta,
     });
   } catch {
     return createResponse({ valid: false, error: "Network error" }, 500);

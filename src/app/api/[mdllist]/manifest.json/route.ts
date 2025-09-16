@@ -1,5 +1,5 @@
 import { buildManifest } from "@/lib/manifest";
-import { getListTitle } from "@/lib/parsers/mdl";
+import { getSimpleListMeta } from "@/lib/parsers/mdl";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {
@@ -14,8 +14,8 @@ export async function GET(
   { params }: { params: Promise<{ mdllist: string }> }
 ) {
   const { mdllist } = await params;
-  const listTitle = await getListTitle(mdllist);
-  const manifest = await buildManifest(listTitle);
+  const { title } = await getSimpleListMeta(mdllist);
+  const manifest = await buildManifest(title);
 
   return NextResponse.json(manifest, {
     headers: CORS_HEADERS,

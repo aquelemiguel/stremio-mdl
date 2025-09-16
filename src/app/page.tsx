@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { type MdlListMeta } from "@/lib/parsers/mdl";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Check, Clipboard, Coffee, XIcon, Github, Globe } from "lucide-react";
+import { Check, Clipboard, Coffee, Github, Globe, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -14,11 +15,7 @@ export default function Home() {
   const [canInstall, setCanInstall] = useState(false);
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
-
-  const [meta, setMeta] = useState<{
-    title: string;
-    total: number;
-  } | null>(null);
+  const [meta, setMeta] = useState<MdlListMeta | null>(null);
 
   useEffect(() => {
     setCanInstall(false);
@@ -96,7 +93,7 @@ export default function Home() {
         {meta && (
           <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
             <Check size={12} color="green" />
-            {meta.title} ({meta.total} shows)
+            {meta.title} ({meta.totalItems} shows)
           </p>
         )}
 

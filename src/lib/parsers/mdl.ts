@@ -1,26 +1,23 @@
 import * as cheerio from "cheerio";
 import type { MetaPreview } from "stremio-addon-sdk";
+import { searchCinemeta } from "../cinemeta";
 
-export async function getListTitle(mdlId: string) {
-  const res = await fetch(`https://mydramalist.com/list/${mdlId}`);
-  if (!res.ok) {
-    throw new Error(`failed to fetch: ${res.status}`);
-  }
+export type MdlSimpleListMeta = {
+  type: "shows" | "people";
+  title: string;
+  totalItems: number;
+};
 
-  const $ = cheerio.load(await res.text());
-  return $("header > h1").text();
-}
+export type MdlListMeta = MdlSimpleListMeta & {
+  items: MetaPreview[];
+};
 
-export async function getListEntries(mdllist: string) {
-  if (!mdllist) {
-    throw new Error("missing mdllist, configure addon");
-  }
-
-  let page = 1;
+export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
+  const simpleMeta = await getSimpleListMeta(mdlId);
   const metas: MetaPreview[] = [];
 
-  while (true) {
-    const url = `https://mydramalist.com/list/${mdllist}?page=${page}`;
+  for (let page = 1; (page - 1) * 100 <= simpleMeta.totalItems; page++) {
+    const url = `https://mydramalist.com/list/${mdlId}?page=${page}`;
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -36,19 +33,10 @@ export async function getListEntries(mdllist: string) {
       let poster = $(el).find("a.film-cover > img").attr("data-src") || "";
       poster = poster.replace("t.jpg", "f.jpg"); // up the quality
 
-      // cinemeta search
-      // todo: use https://github.com/Ivshti/name-to-imdb
-      const res = await fetch(
-        "https://v3-cinemeta.strem.io/catalog/series/top/search=" +
-          encodeURIComponent(name) +
-          ".json"
-      );
-
-      const data = await res.json();
-      const id = data.metas?.[0]?.imdb_id || "";
+      const imdbId = await searchCinemeta(name);
 
       return {
-        id,
+        id: imdbId,
         type: "series" as const, // todo: handle this later on...
         name,
         poster,
@@ -57,15 +45,36 @@ export async function getListEntries(mdllist: string) {
 
     const pageMetas = await Promise.all(promises);
     metas.push(...pageMetas);
-
-    const totalEl = $(".list-bars").children().first().text();
-    const match = totalEl.match(/(\d+) Titles/);
-
-    if (!match || parseInt(match[1]) <= page * 100) {
-      break;
-    }
-    page++;
   }
 
-  return Promise.resolve({ metas });
+  return {
+    ...simpleMeta,
+    items: metas,
+  };
+}
+
+export async function getSimpleListMeta(
+  mdlId: string
+): Promise<MdlSimpleListMeta> {
+  const res = await fetch(`https://mydramalist.com/list/${mdlId}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  const itemsEl = $(".list-bars").children().first().text().trim();
+
+  const match = itemsEl.match(/(\d+) (titles|people)/i);
+  if (!match) {
+    throw new Error("Could not determine list type");
+  }
+
+  const [, totalItems, type] = match || [];
+  const title = $("header > h1").text();
+
+  return {
+    type: type === "People" ? "people" : "shows",
+    title,
+    totalItems: parseInt(totalItems),
+  };
 }

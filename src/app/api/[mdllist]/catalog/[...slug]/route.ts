@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getListEntries } from "@/lib/parsers/mdl";
+import { getListMeta } from "@/lib/parsers/mdl";
 
 interface CatalogArgs {
   type?: string;
@@ -14,8 +14,8 @@ interface CatalogArgs {
 
 const catalogHandler = async (args: CatalogArgs) => {
   const mdllist = args.config?.mdllist || "";
-  const results = await getListEntries(mdllist);
-  return results;
+  const { items } = await getListMeta(mdllist);
+  return { metas: items };
 };
 
 const CORS_HEADERS = {
