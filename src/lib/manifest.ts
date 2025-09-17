@@ -2,9 +2,9 @@ import { Manifest } from "stremio-addon-sdk";
 import { getBaseUrl } from "./config";
 
 const BASE_MANIFEST: Manifest = {
-  id: "org.aquelemiguel.stremio-mdl",
+  id: "com.aquelemiguel.stremio-mdl",
   version: "1.0.0",
-  name: "MyDramaList Catalog",
+  name: "MyDramaList",
   description: "Add MyDramaList lists as Stremio catalogs",
   logo: `${getBaseUrl()}/logo.png`,
   contactEmail: "aquelemiguel@gmail.com",
