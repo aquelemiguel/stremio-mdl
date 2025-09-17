@@ -86,7 +86,7 @@ export default function Home() {
 
         <Input
           className="mt-6"
-          placeholder="https://mydramalist.com/list/3EEVm9b3"
+          placeholder="e.g., https://mydramalist.com/list/..."
           onChange={onChange}
         />
 
