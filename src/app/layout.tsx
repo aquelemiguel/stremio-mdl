@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "stremio-mdl",
-  description: "Add MyDramaList lists as Stremio catalogs",
+  description: "Add MyDramaList lists as Stremio catalogs.",
   icons: {
     icon: "favicon.ico",
   },

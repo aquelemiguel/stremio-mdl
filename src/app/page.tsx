@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
+import { getVersion } from "@/lib/manifest";
 import { type MdlListMeta } from "@/lib/parsers/mdl";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { Check, Clipboard, Coffee, Github, Globe, XIcon } from "lucide-react";
@@ -146,28 +147,38 @@ export default function Home() {
           </Tooltip>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-100">
-          <div className="flex items-center justify-center gap-8">
-            <a
-              href="https://github.com/aquelemiguel/stremio-mdl"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-              title="View source on GitHub"
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <a
+                href="https://github.com/aquelemiguel/stremio-mdl"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+                title="View source on GitHub"
+              >
+                <Github size={14} />
+                <span className="text-xs">GitHub</span>
+              </a>
+              <a
+                href="https://buymeacoffee.com/aquelemiguel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Support development"
+              >
+                <Coffee size={14} />
+                <span className="text-xs">Buy me a coffee</span>
+              </a>
+            </div>
+            <span
+              style={{
+                fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+              }}
+              className="text-xs text-gray-300"
             >
-              <Github size={16} />
-              <span className="text-xs">aquelemiguel</span>
-            </a>
-            <a
-              href="https://buymeacoffee.com/aquelemiguel"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Support development"
-            >
-              <Coffee size={16} />
-              <span className="text-xs">Buy me a coffee</span>
-            </a>
+              {getVersion()}
+            </span>
           </div>
         </div>
       </div>

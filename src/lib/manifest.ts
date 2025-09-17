@@ -5,7 +5,7 @@ const BASE_MANIFEST: Manifest = {
   id: "com.aquelemiguel.stremio-mdl",
   version: "1.0.0",
   name: "MyDramaList",
-  description: "Add MyDramaList lists as Stremio catalogs",
+  description: "Add MyDramaList lists as Stremio catalogs.",
   logo: `${getBaseUrl()}/logo.png`,
   contactEmail: "aquelemiguel@gmail.com",
   resources: ["catalog"],
@@ -37,4 +37,8 @@ export async function buildManifest(catalog?: string): Promise<Manifest> {
       configurationRequired: false,
     },
   };
+}
+
+export function getVersion(): string {
+  return `v${BASE_MANIFEST.version}`;
 }
