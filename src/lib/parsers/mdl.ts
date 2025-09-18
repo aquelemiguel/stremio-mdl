@@ -38,10 +38,7 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
 
     const promises = els.map(async (el): Promise<MdlListItem> => {
       const name = $(el).find(".title > a").text();
-      const description = $(el)
-        .find(".content")
-        .children(":nth-child(2)")
-        .text();
+      const description = $(el).find(".content .title + *").text();
       const url = $(el).find(".title > a").attr("href") || "";
 
       const match = description.match(/(\w+)\s(\w+) - (\d+)/);
@@ -52,6 +49,7 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
       const typeMap: Record<string, ContentType> = {
         drama: "series",
         movie: "movie",
+        "tv show": "series",
         special: "series",
       };
 
@@ -95,7 +93,7 @@ export async function getSimpleListMeta(
   const $ = cheerio.load(await res.text());
   const itemsEl = $(".list-bars").children().first().text().trim();
 
-  const match = itemsEl.match(/(\d+) (titles|people)/i);
+  const match = itemsEl.match(/(\d+) (titles|people|tv show)/i);
   if (!match) {
     throw new Error("Could not determine list type");
   }
