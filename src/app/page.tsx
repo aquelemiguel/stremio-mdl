@@ -1,6 +1,7 @@
 "use client";
 
 import { Footer } from "@/components/Footer";
+import { HintSpan } from "@/components/HintSpan";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
 import { type MdlCustomListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { Check, Clipboard, Globe, XIcon } from "lucide-react";
+import { Check, Clipboard, Globe, InfoIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type MdlUserListType = {
@@ -159,7 +160,29 @@ export default function Home() {
           MyDramaList lists as Stremio catalogs
         </p>
 
-        <div className="mt-6 flex gap-2">
+        <div className="mt-4 flex items-center gap-1.5">
+          <InfoIcon size={12} className="text-gray-500" />
+          <p className="text-xs text-gray-500">
+            Enter a{" "}
+            <HintSpan
+              text="profile"
+              hint="https://mydramalist.com/profile/user123"
+            />
+            ,{" "}
+            <HintSpan
+              text="drama list"
+              hint="https://mydramalist.com/dramalist/user123"
+            />{" "}
+            or{" "}
+            <HintSpan
+              text="custom list"
+              hint="https://mydramalist.com/list/123abc"
+            />{" "}
+            link.
+          </p>
+        </div>
+
+        <div className="mt-2 flex gap-2">
           <Input
             className="flex-1"
             placeholder="e.g., https://mydramalist.com/list/..."
@@ -170,7 +193,7 @@ export default function Home() {
             onValueChange={(value) => setSubcategory(value)}
           >
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="Select list..." />
+              <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
               {category === "custom" ? (
