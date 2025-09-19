@@ -1,15 +1,65 @@
 "use client";
 
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
-import { getVersion } from "@/lib/manifest";
-import { type MdlListMeta } from "@/lib/parsers/mdl";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Check, Clipboard, Coffee, Github, Globe, XIcon } from "lucide-react";
+import { type MdlCustomListMeta } from "@/lib/parsers/mdl-custom-lists";
+import { Check, Clipboard, Globe, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+
+type MdlUserListType = {
+  name: string;
+  path: string;
+};
+
+const mdlUserListTypes: MdlUserListType[] = [
+  {
+    name: "Watching",
+    path: "watching",
+  },
+  {
+    name: "Completed",
+    path: "completed",
+  },
+  {
+    name: "On Hold",
+    path: "on_hold",
+  },
+  {
+    name: "Dropped",
+    path: "dropped",
+  },
+  {
+    name: "Plan to Watch",
+    path: "plan_to_watch",
+  },
+  {
+    name: "Undecided",
+    path: "undecided",
+  },
+  {
+    name: "Not Interested",
+    path: "not_interested",
+  },
+];
+
+function isValidSubcategory(value: string): boolean {
+  return mdlUserListTypes.map(({ path }) => path).includes(value);
+}
 
 export default function Home() {
   const [mdlList, setMdlList] = useState("");
@@ -17,7 +67,10 @@ export default function Home() {
   const [canInstall, setCanInstall] = useState(false);
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
-  const [meta, setMeta] = useState<MdlListMeta | null>(null);
+  const [meta, setMeta] = useState<MdlCustomListMeta | null>(null);
+
+  const [category, setCategory] = useState<"user" | "custom">();
+  const [subcategory, setSubcategory] = useState<string>();
 
   useEffect(() => {
     setCanInstall(false);
@@ -56,8 +109,30 @@ export default function Home() {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
-    const match = url.match(/mydramalist\.com\/list\/([a-zA-Z0-9]+)/);
-    setMdlList(match ? match[1] : "");
+    const match = url.match(
+      /mydramalist\.com\/((?:drama)?list)\/(\w+)(?:\/(\w+))?/
+    );
+
+    if (!match) {
+      return;
+    }
+
+    const [, category, id, subcategory] = match;
+
+    if (category === "dramalist") {
+      setCategory("user");
+      if (isValidSubcategory(subcategory)) {
+        setSubcategory(subcategory);
+      }
+    } else if (category === "list") {
+      setCategory("custom");
+      setSubcategory("custom");
+    } else {
+      setCategory(undefined);
+      setSubcategory(undefined);
+      return;
+    }
+    setMdlList(id);
   };
 
   const onWebInstall = async () => {
@@ -78,17 +153,40 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
         <h1 className="text-3xl font-bold text-center">stremio-mdl</h1>
         <p className="mt-1 text-center text-gray-600 font-medium">
           MyDramaList lists as Stremio catalogs
         </p>
 
-        <Input
-          className="mt-6"
-          placeholder="e.g., https://mydramalist.com/list/..."
-          onChange={onChange}
-        />
+        <div className="mt-6 flex gap-2">
+          <Input
+            className="flex-1"
+            placeholder="e.g., https://mydramalist.com/list/..."
+            onChange={onChange}
+          />
+          <Select
+            value={subcategory}
+            onValueChange={(value) => setSubcategory(value)}
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Select list..." />
+            </SelectTrigger>
+            <SelectContent>
+              {category === "custom" ? (
+                <SelectItem key="custom" value="custom">
+                  Custom
+                </SelectItem>
+              ) : (
+                mdlUserListTypes.map(({ name, path }) => (
+                  <SelectItem key={path} value={path}>
+                    {name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
 
         {meta && (
           <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
@@ -146,41 +244,7 @@ export default function Home() {
             </TooltipContent>
           </Tooltip>
         </div>
-
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/aquelemiguel/stremio-mdl"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="View source on GitHub"
-              >
-                <Github size={14} />
-                <span className="text-xs">GitHub</span>
-              </a>
-              <a
-                href="https://buymeacoffee.com/aquelemiguel"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Support development"
-              >
-                <Coffee size={14} />
-                <span className="text-xs">Buy me a coffee</span>
-              </a>
-            </div>
-            <span
-              style={{
-                fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-              }}
-              className="text-xs text-gray-300"
-            >
-              {getVersion()}
-            </span>
-          </div>
-        </div>
+        <Footer />
       </div>
     </div>
   );

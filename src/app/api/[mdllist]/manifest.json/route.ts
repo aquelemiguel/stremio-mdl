@@ -1,5 +1,5 @@
 import { buildManifest } from "@/lib/manifest";
-import { getSimpleListMeta } from "@/lib/parsers/mdl";
+import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {

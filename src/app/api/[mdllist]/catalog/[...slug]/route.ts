@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBaseUrl } from "@/lib/config";
-import { getListMeta } from "@/lib/parsers/mdl";
+import { getListMeta } from "@/lib/parsers/mdl-custom-lists";
 
 interface CatalogArgs {
   type?: string;

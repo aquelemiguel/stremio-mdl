@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSimpleListMeta } from "@/lib/parsers/mdl";
+import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
 
 function createResponse(data: unknown, status = 200) {
   return NextResponse.json(data, {
