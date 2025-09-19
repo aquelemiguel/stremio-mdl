@@ -58,10 +58,6 @@ const mdlUserListTypes: MdlUserListType[] = [
   },
 ];
 
-function isValidSubcategory(value: string): boolean {
-  return mdlUserListTypes.map(({ path }) => path).includes(value);
-}
-
 export default function Home() {
   const [mdlList, setMdlList] = useState("");
   const [isValidating, setIsValidating] = useState(false);
@@ -111,28 +107,30 @@ export default function Home() {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     const match = url.match(
-      /mydramalist\.com\/((?:drama)?list)\/(\w+)(?:\/(\w+))?/
+      /mydramalist\.com\/(list|dramalist|profile)\/(\w+)/
     );
+
+    setCategory(undefined);
+    setSubcategory(undefined);
 
     if (!match) {
       return;
     }
 
-    const [, category, id, subcategory] = match;
+    const [, category, id] = match;
 
-    if (category === "dramalist") {
-      setCategory("user");
-      if (isValidSubcategory(subcategory)) {
-        setSubcategory(subcategory);
-      }
-    } else if (category === "list") {
-      setCategory("custom");
-      setSubcategory("custom");
-    } else {
-      setCategory(undefined);
-      setSubcategory(undefined);
-      return;
+    switch (category) {
+      case "list":
+        setCategory("custom");
+        setSubcategory("custom");
+        break;
+
+      case "dramalist":
+      case "profile":
+        setCategory("user");
+        break;
     }
+
     setMdlList(id);
   };
 
@@ -185,7 +183,7 @@ export default function Home() {
         <div className="mt-2 flex gap-2">
           <Input
             className="flex-1"
-            placeholder="e.g., https://mydramalist.com/list/..."
+            placeholder="Paste your link here..."
             onChange={onChange}
           />
           <Select
