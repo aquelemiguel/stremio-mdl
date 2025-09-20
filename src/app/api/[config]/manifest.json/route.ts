@@ -1,3 +1,4 @@
+import { decode } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
 import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
 import { NextResponse } from "next/server";
@@ -11,10 +12,12 @@ const CORS_HEADERS = {
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ mdllist: string }> }
+  { params }: { params: Promise<{ config: string }> }
 ) {
-  const { mdllist } = await params;
-  const { title } = await getSimpleListMeta(mdllist);
+  const { config } = await params;
+  const { id } = decode(config);
+
+  const { title } = await getSimpleListMeta(id);
   const manifest = await buildManifest(title);
 
   return NextResponse.json(manifest, {

@@ -11,7 +11,6 @@ const BASE_MANIFEST: Manifest = {
   resources: ["catalog"],
   types: ["movie", "series"],
   catalogs: [],
-  config: [{ key: "mdllist", type: "text" }],
   behaviorHints: {
     configurable: true,
     configurationRequired: true,

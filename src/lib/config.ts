@@ -1,3 +1,8 @@
+import {
+  compressToEncodedURIComponent,
+  decompressFromEncodedURIComponent,
+} from "lz-string";
+
 export function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL || "";
 }
@@ -8,23 +13,20 @@ type ConfigUserData = {
   subcategory: string; // todo: make type more strict
 };
 
-function encode(userData: ConfigUserData): string {
-  return btoa(JSON.stringify(userData))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+// todo: move encode/decode somewhere else probably...
+export function encode(userData: ConfigUserData): string {
+  return compressToEncodedURIComponent(JSON.stringify(userData));
 }
 
-function decode(str: string): ConfigUserData {
-  const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
-  return JSON.parse(atob(b64));
+export function decode(str: string): ConfigUserData {
+  return JSON.parse(decompressFromEncodedURIComponent(str));
 }
 
 export function getStremioDeepLink(userData: ConfigUserData): string {
   const baseUrl = getBaseUrl().replace(/https?:\/\//, "");
-  const encodedData = encode(userData);
+  const encoded = encode(userData);
 
-  return `stremio://${baseUrl}/api/${encodedData}/manifest.json`;
+  return `stremio://${baseUrl}/api/${encoded}/manifest.json`;
 }
 
 // todo: maybe this is more of an util
@@ -37,8 +39,7 @@ export function getWebInstallLink(userData: ConfigUserData): string {
 
 export function getManifestUrl(userData: ConfigUserData): string {
   const baseUrl = getBaseUrl();
-  const encodedData = encode(userData);
-  console.log(encodedData, userData);
+  const encoded = encode(userData);
 
-  return `${baseUrl}/api/${encodedData}/manifest.json`;
+  return `${baseUrl}/api/${encoded}/manifest.json`;
 }
