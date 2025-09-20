@@ -2,7 +2,6 @@ import * as cheerio from "cheerio";
 import { MdlTitleResponse } from "../mdl-api/types";
 import { MetaPreview, ContentType } from "stremio-addon-sdk";
 import { searchCinemeta } from "../cinemeta";
-import { ConfigUserData } from "../config";
 
 type UserListTableRow = {
   id: number;
@@ -10,7 +9,7 @@ type UserListTableRow = {
   title: string;
   href: string;
   country: string;
-  year: number;
+  year?: number;
   type: string;
   score: number;
   progress: number; // % between watched and total eps
@@ -44,7 +43,8 @@ export async function buildCatalog(
     const type = row.type === "Movie" ? "movie" : ("series" as ContentType);
 
     // todo: allow number in cinemeta search
-    const id = await searchCinemeta(row.title, type, row.year.toString());
+    console.log(row);
+    const id = await searchCinemeta(row.title, type, row.year?.toString());
 
     return {
       id,
