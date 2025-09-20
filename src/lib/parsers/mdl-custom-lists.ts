@@ -21,12 +21,12 @@ export type MdlContentMeta = {
   originalTitle: string;
 };
 
-export async function getListMeta(mdlId: string): Promise<MdlCustomListMeta> {
-  const simpleMeta = await getSimpleListMeta(mdlId);
+export async function getListMeta(id: string): Promise<MdlCustomListMeta> {
+  const simpleMeta = await getSimpleListMeta(id);
   const items: MdlCustomListItem[] = [];
 
   for (let page = 1; (page - 1) * 100 <= simpleMeta.totalItems; page++) {
-    const url = `https://mydramalist.com/list/${mdlId}?page=${page}`;
+    const url = `https://mydramalist.com/list/${id}?page=${page}`;
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -83,9 +83,9 @@ export async function getListMeta(mdlId: string): Promise<MdlCustomListMeta> {
 }
 
 export async function getSimpleListMeta(
-  mdlId: string
+  id: string
 ): Promise<MdlSimpleCustomListMeta> {
-  const res = await fetch(`https://mydramalist.com/list/${mdlId}`);
+  const res = await fetch(`https://mydramalist.com/list/${id}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch: ${res.status}`);
   }

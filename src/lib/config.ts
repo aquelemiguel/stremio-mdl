@@ -7,7 +7,7 @@ export function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL || "";
 }
 
-type ConfigUserData = {
+export type ConfigUserData = {
   category: "user" | "custom";
   id: string;
   subcategory: string; // todo: make type more strict

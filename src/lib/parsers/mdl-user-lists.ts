@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import { MdlTitleResponse } from "../mdl-api/types";
 import { MetaPreview, ContentType } from "stremio-addon-sdk";
 import { searchCinemeta } from "../cinemeta";
+import { ConfigUserData } from "../config";
 
 type UserListTableRow = {
   id: number;
@@ -23,10 +24,20 @@ function getProgress(seen: number, total: number): number {
   return (seen / total) * 100;
 }
 
+// todo: this does not belong here
+export async function getUserHandle(id: string): Promise<string> {
+  const res = await fetch(`https://mydramalist.com/profile/${id}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  return $(".profile-header h1").text();
+}
+
 // todo: move this to a stremio folder probably
 export async function buildCatalog(
-  list: UserListTableRow[],
-  sort?: null // todo: eventually add sort and filters
+  list: UserListTableRow[]
 ): Promise<MetaPreview[]> {
   const promises = list.map(async (row): Promise<MetaPreview> => {
     // todo: probably use content_type here
@@ -46,8 +57,15 @@ export async function buildCatalog(
   return await Promise.all(promises);
 }
 
-export async function getUserListMeta(doc: string) {
-  const $ = cheerio.load(doc);
+export async function getUserListMeta(id: string, subcategory: string) {
+  const res = await fetch(
+    `https://mydramalist.com/dramalist/${id}/${subcategory}`
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
 
   const promises = $("tbody tr")
     .map((_, el) => {
@@ -57,7 +75,7 @@ export async function getUserListMeta(doc: string) {
       return (async () => {
         const res = await fetch(`https://mydramalist.com/v1/titles/${id}`);
         if (!res.ok) {
-          // todo: handle here
+          throw new Error(`Failed to fetch: ${res.status}`);
         }
 
         const data: MdlTitleResponse = await res.json();

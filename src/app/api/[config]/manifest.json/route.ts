@@ -1,6 +1,7 @@
 import { decode } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
 import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
+import { getUserHandle } from "@/lib/parsers/mdl-user-lists";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {
@@ -15,9 +16,19 @@ export async function GET(
   { params }: { params: Promise<{ config: string }> }
 ) {
   const { config } = await params;
-  const { id } = decode(config);
+  const { id, category } = decode(config);
 
-  const { title } = await getSimpleListMeta(id);
+  let title = "";
+
+  if (category === "custom") {
+    const meta = await getSimpleListMeta(id);
+    title = meta.title;
+  } else if (category === "user") {
+    title = await getUserHandle(id);
+  } else {
+    throw new Error("Wrong category!");
+  }
+
   const manifest = await buildManifest(title);
 
   return NextResponse.json(manifest, {
