@@ -2,6 +2,7 @@
 
 import { Footer } from "@/components/Footer";
 import { HintSpan } from "@/components/HintSpan";
+import { PerforatedLine } from "@/components/PerforatedLine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +20,15 @@ import {
 } from "@/components/ui/tooltip";
 import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
 import { type MdlCustomListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { Check, Clipboard, Globe, InfoIcon, XIcon } from "lucide-react";
+import {
+  Check,
+  Clipboard,
+  Globe,
+  InfoIcon,
+  Popcorn,
+  Sofa,
+  XIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 type MdlUserListType = {
@@ -154,11 +163,15 @@ export default function Home() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
         <h1 className="text-3xl font-bold text-center">stremio-mdl</h1>
-        <p className="mt-1 text-center text-gray-600 font-medium">
+        <p className="mt-1 text-center text-gray-500 font-medium">
           MyDramaList lists as Stremio catalogs
         </p>
 
-        <div className="mt-4 flex items-center gap-1.5">
+        <PerforatedLine>
+          <Popcorn size={18} className="text-gray-300" />
+        </PerforatedLine>
+
+        <div className="flex items-center gap-1.5">
           <InfoIcon size={12} className="text-gray-500" />
           <p className="text-xs text-gray-500">
             Enter a{" "}
@@ -265,6 +278,11 @@ export default function Home() {
             </TooltipContent>
           </Tooltip>
         </div>
+
+        <PerforatedLine>
+          <Sofa size={18} className="text-gray-300" />
+        </PerforatedLine>
+
         <Footer />
       </div>
     </div>
