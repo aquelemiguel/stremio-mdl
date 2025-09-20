@@ -18,7 +18,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
+import {
+  getManifestUrl,
+  getStremioDeepLink,
+  getWebInstallLink,
+} from "@/lib/config";
 import { type MdlCustomListMeta } from "@/lib/parsers/mdl-custom-lists";
 import {
   Check,
@@ -110,12 +114,6 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [category, subcategory, id]);
 
-  const onInstall = () => {
-    if (id) {
-      window.location.href = getStremioDeepLink(id);
-    }
-  };
-
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     const match = url.match(
@@ -146,15 +144,28 @@ export default function Home() {
     setId(id);
   };
 
+  const onInstall = () => {
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const installUrl = getStremioDeepLink({ id, category, subcategory });
+    window.location.href = installUrl;
+  };
+
   const onWebInstall = async () => {
-    const addonUrl = getManifestUrl(id);
-    open(
-      `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
-    );
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const installUrl = getWebInstallLink({ id, category, subcategory });
+    open(installUrl);
   };
 
   const onClipboard = async () => {
-    await navigator.clipboard.writeText(getManifestUrl(id));
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const manifestUrl = getManifestUrl({ id, category, subcategory });
+    await navigator.clipboard.writeText(manifestUrl);
     setIsCopied(true);
 
     setTimeout(() => {

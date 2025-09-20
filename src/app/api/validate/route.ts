@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { getUserListMeta } from "@/lib/parsers/mdl-user-lists";
 
 type ValidateResponse = NextResponse<{ valid: boolean }>;
 
@@ -34,9 +33,6 @@ async function handleUserList(
         { status: res.status }
       );
     }
-
-    const meta = await getUserListMeta(await res.text());
-
     return NextResponse.json({ valid: true });
   } catch {
     return NextResponse.json(
