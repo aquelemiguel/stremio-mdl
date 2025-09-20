@@ -68,7 +68,6 @@ const mdlUserListTypes: MdlUserListType[] = [
 ];
 
 export default function Home() {
-  const [mdlList, setMdlList] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [error, setError] = useState("");
@@ -77,13 +76,15 @@ export default function Home() {
 
   const [category, setCategory] = useState<"user" | "custom">();
   const [subcategory, setSubcategory] = useState<string>();
+  const [id, setId] = useState<string>("");
 
   useEffect(() => {
     setCanInstall(false);
 
-    if (!mdlList) {
+    if (!id || !category || !subcategory) {
       setMeta(null);
       setIsValidating(false);
+      setError("");
       return;
     }
 
@@ -92,7 +93,9 @@ export default function Home() {
 
     const timeout = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/validate?mdl=${mdlList}`);
+        const res = await fetch(
+          `/api/validate?category=${category}&subcategory=${subcategory}&id=${id}`
+        );
         const { valid, error, meta } = await res.json();
         setCanInstall(valid);
         setError(error);
@@ -105,11 +108,11 @@ export default function Home() {
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [mdlList]);
+  }, [category, subcategory, id]);
 
   const onInstall = () => {
-    if (mdlList) {
-      window.location.href = getStremioDeepLink(mdlList);
+    if (id) {
+      window.location.href = getStremioDeepLink(id);
     }
   };
 
@@ -140,18 +143,18 @@ export default function Home() {
         break;
     }
 
-    setMdlList(id);
+    setId(id);
   };
 
   const onWebInstall = async () => {
-    const addonUrl = getManifestUrl(mdlList);
+    const addonUrl = getManifestUrl(id);
     open(
       `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
     );
   };
 
   const onClipboard = async () => {
-    await navigator.clipboard.writeText(getManifestUrl(mdlList));
+    await navigator.clipboard.writeText(getManifestUrl(id));
     setIsCopied(true);
 
     setTimeout(() => {
@@ -167,7 +170,7 @@ export default function Home() {
           MyDramaList lists as Stremio catalogs
         </p>
 
-        <PerforatedLine>
+        <PerforatedLine className="my-4">
           <Popcorn size={18} className="text-gray-300" />
         </PerforatedLine>
 
@@ -279,7 +282,7 @@ export default function Home() {
           </Tooltip>
         </div>
 
-        <PerforatedLine>
+        <PerforatedLine className="mb-2 mt-4">
           <Sofa size={18} className="text-gray-300" />
         </PerforatedLine>
 

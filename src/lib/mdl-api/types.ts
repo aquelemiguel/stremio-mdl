@@ -1,0 +1,22 @@
+export type MdlTitleResponse = {
+  id: number;
+  title: string;
+  original_title: string;
+  alt_titles: string;
+  synopsis: string;
+  episodes: number;
+  rank: number;
+  popularity: number;
+  film_type: string;
+  country: string;
+  origin_type: string;
+  type: string;
+  url: string;
+  thumbnail: string;
+  cover: string;
+  rating: number;
+  year: number;
+  content_type: number;
+  ended: boolean;
+  genre: { id: number; name: string };
+};
