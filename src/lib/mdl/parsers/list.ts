@@ -1,32 +1,32 @@
 import * as cheerio from "cheerio";
 import type { ContentType, MetaPreview } from "stremio-addon-sdk";
-import { searchCinemeta } from "../cinemeta";
+import { searchCinemeta } from "../../cinemeta";
 
-export type MdlSimpleListMeta = {
+export type MdlSimpleCustomListMeta = {
   type: "shows" | "people";
   title: string;
   totalItems: number;
 };
 
-export type MdlListItem = {
+export type MdlCustomListItem = {
   meta: MetaPreview;
   url: string;
 };
 
-export type MdlListMeta = MdlSimpleListMeta & {
-  items: MdlListItem[];
+export type MdlCustomListMeta = MdlSimpleCustomListMeta & {
+  items: MdlCustomListItem[];
 };
 
 export type MdlContentMeta = {
   originalTitle: string;
 };
 
-export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
-  const simpleMeta = await getSimpleListMeta(mdlId);
-  const items: MdlListItem[] = [];
+export async function getListMeta(id: string): Promise<MdlCustomListMeta> {
+  const simpleMeta = await getSimpleListMeta(id);
+  const items: MdlCustomListItem[] = [];
 
   for (let page = 1; (page - 1) * 100 <= simpleMeta.totalItems; page++) {
-    const url = `https://mydramalist.com/list/${mdlId}?page=${page}`;
+    const url = `https://mydramalist.com/list/${id}?page=${page}`;
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -36,7 +36,7 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
     const $ = cheerio.load(await res.text());
     const els = $("li[id^='mdl']").toArray();
 
-    const promises = els.map(async (el): Promise<MdlListItem> => {
+    const promises = els.map(async (el): Promise<MdlCustomListItem> => {
       const name = $(el).find(".title > a").text();
       const description = $(el).find(".content .title + *").text();
       const url = $(el).find(".title > a").attr("href") || "";
@@ -83,9 +83,9 @@ export async function getListMeta(mdlId: string): Promise<MdlListMeta> {
 }
 
 export async function getSimpleListMeta(
-  mdlId: string
-): Promise<MdlSimpleListMeta> {
-  const res = await fetch(`https://mydramalist.com/list/${mdlId}`);
+  id: string
+): Promise<MdlSimpleCustomListMeta> {
+  const res = await fetch(`https://mydramalist.com/list/${id}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch: ${res.status}`);
   }

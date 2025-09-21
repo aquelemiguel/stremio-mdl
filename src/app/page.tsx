@@ -1,43 +1,109 @@
 "use client";
 
+import { Footer } from "@/components/Footer";
+import { HintSpan } from "@/components/HintSpan";
+import { PerforatedLine } from "@/components/PerforatedLine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-import { getManifestUrl, getStremioDeepLink } from "@/lib/config";
-import { getVersion } from "@/lib/manifest";
-import { type MdlListMeta } from "@/lib/parsers/mdl";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Check, Clipboard, Coffee, Github, Globe, XIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  getManifestUrl,
+  getStremioDeepLink,
+  getWebInstallLink,
+} from "@/lib/config";
+import {
+  Check,
+  Clipboard,
+  Globe,
+  InfoIcon,
+  Popcorn,
+  Sofa,
+  XIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
+type MdlUserListType = {
+  name: string;
+  path: string;
+};
+
+const mdlUserListTypes: MdlUserListType[] = [
+  {
+    name: "Watching",
+    path: "watching",
+  },
+  {
+    name: "Completed",
+    path: "completed",
+  },
+  {
+    name: "On Hold",
+    path: "on_hold",
+  },
+  {
+    name: "Dropped",
+    path: "dropped",
+  },
+  {
+    name: "Plan to Watch",
+    path: "plan_to_watch",
+  },
+  {
+    name: "Undecided",
+    path: "undecided",
+  },
+  {
+    name: "Not Interested",
+    path: "not_interested",
+  },
+];
+
 export default function Home() {
-  const [mdlList, setMdlList] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
-  const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
-  const [meta, setMeta] = useState<MdlListMeta | null>(null);
+
+  const [error, setError] = useState<string>();
+  const [info, setInfo] = useState<string>();
+
+  const [category, setCategory] = useState<"user" | "custom">();
+  const [subcategory, setSubcategory] = useState<string>();
+  const [id, setId] = useState<string>("");
 
   useEffect(() => {
     setCanInstall(false);
 
-    if (!mdlList) {
-      setMeta(null);
+    if (!id || !category || !subcategory) {
+      setInfo(undefined);
       setIsValidating(false);
+      setError("");
       return;
     }
 
     setIsValidating(true);
-    setMeta(null);
+    setInfo(undefined);
 
     const timeout = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/validate?mdl=${mdlList}`);
-        const { valid, error, meta } = await res.json();
+        const res = await fetch(
+          `/api/validate?category=${category}&subcategory=${subcategory}&id=${id}`
+        );
+        const { valid, error, info } = await res.json();
         setCanInstall(valid);
         setError(error);
-        setMeta(meta || null);
+        setInfo(info || undefined);
       } catch {
         setCanInstall(false);
       } finally {
@@ -46,29 +112,57 @@ export default function Home() {
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [mdlList]);
-
-  const onInstall = () => {
-    if (mdlList) {
-      window.location.href = getStremioDeepLink(mdlList);
-    }
-  };
+  }, [category, subcategory, id]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
-    const match = url.match(/mydramalist\.com\/list\/([a-zA-Z0-9]+)/);
-    setMdlList(match ? match[1] : "");
+    const match = url.match(
+      /mydramalist\.com\/(list|dramalist|profile)\/(\w+)/
+    );
+
+    if (!match) {
+      return;
+    }
+
+    const [, category, id] = match;
+
+    switch (category) {
+      case "list":
+        setCategory("custom");
+        setSubcategory("custom");
+        break;
+
+      case "dramalist":
+      case "profile":
+        setCategory("user");
+        break;
+    }
+
+    setId(id);
+  };
+
+  const onInstall = () => {
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const installUrl = getStremioDeepLink({ id, category, subcategory });
+    window.location.href = installUrl;
   };
 
   const onWebInstall = async () => {
-    const addonUrl = getManifestUrl(mdlList);
-    open(
-      `http://web.stremio.com/#/addons?addon=${encodeURIComponent(addonUrl)}`
-    );
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const installUrl = getWebInstallLink({ id, category, subcategory });
+    open(installUrl);
   };
 
   const onClipboard = async () => {
-    await navigator.clipboard.writeText(getManifestUrl(mdlList));
+    if (!id || !category || !subcategory) {
+      return;
+    }
+    const manifestUrl = getManifestUrl({ id, category, subcategory });
+    await navigator.clipboard.writeText(manifestUrl);
     setIsCopied(true);
 
     setTimeout(() => {
@@ -78,22 +172,71 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 sm:p-8 sm:pb-6">
         <h1 className="text-3xl font-bold text-center">stremio-mdl</h1>
-        <p className="mt-1 text-center text-gray-600 font-medium">
+        <p className="mt-1 text-center text-gray-500 font-medium">
           MyDramaList lists as Stremio catalogs
         </p>
 
-        <Input
-          className="mt-6"
-          placeholder="e.g., https://mydramalist.com/list/..."
-          onChange={onChange}
-        />
+        <PerforatedLine className="my-4">
+          <Popcorn size={18} className="text-gray-300" />
+        </PerforatedLine>
 
-        {meta && (
+        <div className="flex items-center gap-1.5">
+          <InfoIcon size={12} className="text-gray-500" />
+          <p className="text-xs text-gray-500">
+            Enter a{" "}
+            <HintSpan
+              text="profile"
+              hint="https://mydramalist.com/profile/user123"
+            />
+            ,{" "}
+            <HintSpan
+              text="drama list"
+              hint="https://mydramalist.com/dramalist/user123"
+            />{" "}
+            or{" "}
+            <HintSpan
+              text="custom list"
+              hint="https://mydramalist.com/list/123abc"
+            />{" "}
+            link.
+          </p>
+        </div>
+
+        <div className="mt-2 flex gap-2">
+          <Input
+            className="flex-1"
+            placeholder="Paste your link here..."
+            onChange={onChange}
+          />
+          <Select
+            value={subcategory}
+            onValueChange={(value) => setSubcategory(value)}
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Select..." />
+            </SelectTrigger>
+            <SelectContent>
+              {category === "custom" ? (
+                <SelectItem key="custom" value="custom">
+                  Custom
+                </SelectItem>
+              ) : (
+                mdlUserListTypes.map(({ name, path }) => (
+                  <SelectItem key={path} value={path}>
+                    {name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {info && (
           <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
             <Check size={12} color="green" />
-            {meta.title} ({meta.totalItems} shows)
+            {info}
           </p>
         )}
 
@@ -147,40 +290,11 @@ export default function Home() {
           </Tooltip>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/aquelemiguel/stremio-mdl"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="View source on GitHub"
-              >
-                <Github size={14} />
-                <span className="text-xs">GitHub</span>
-              </a>
-              <a
-                href="https://buymeacoffee.com/aquelemiguel"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Support development"
-              >
-                <Coffee size={14} />
-                <span className="text-xs">Buy me a coffee</span>
-              </a>
-            </div>
-            <span
-              style={{
-                fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-              }}
-              className="text-xs text-gray-300"
-            >
-              {getVersion()}
-            </span>
-          </div>
-        </div>
+        <PerforatedLine className="mb-2 mt-4">
+          <Sofa size={18} className="text-gray-300" />
+        </PerforatedLine>
+
+        <Footer />
       </div>
     </div>
   );

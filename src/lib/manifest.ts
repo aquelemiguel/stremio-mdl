@@ -11,7 +11,6 @@ const BASE_MANIFEST: Manifest = {
   resources: ["catalog"],
   types: ["movie", "series"],
   catalogs: [],
-  config: [{ key: "mdllist", type: "text" }],
   behaviorHints: {
     configurable: true,
     configurationRequired: true,
@@ -28,8 +27,14 @@ export async function buildManifest(catalog?: string): Promise<Manifest> {
     catalogs: [
       {
         id: "mydramalist",
-        type: "series",
-        name: `MyDramaList: ${catalog}`,
+        type: "MyDramaList" as never, // bypass the default type
+        name: catalog,
+        extra: [
+          {
+            name: "genre",
+            options: ["All", "Sort: A-Z", "Sort: Z-A"],
+          },
+        ],
       },
     ],
     behaviorHints: {
