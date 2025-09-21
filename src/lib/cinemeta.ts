@@ -11,21 +11,22 @@ type CinemetaResponse = {
 
 function findByReleaseYear(
   metas: CinemetaResponse["metas"],
-  releaseYear?: string
+  releaseYear?: number
 ) {
-  if (!releaseYear) {
-    return null;
+  if (releaseYear === undefined) {
+    return undefined;
   }
   return metas.find(
     (meta) =>
-      meta.releaseInfo?.startsWith(releaseYear) || meta.year === releaseYear
+      meta.releaseInfo?.startsWith(`${releaseYear}`) ||
+      meta.year === `${releaseYear}`
   )?.imdb_id;
 }
 
 export async function searchCinemeta(
   query: string,
   type: ContentType,
-  releaseYear?: string,
+  releaseYear?: number,
   itemUrl?: string
 ): Promise<string> {
   const url = `https://v3-cinemeta.strem.io/catalog/${type}/top`;

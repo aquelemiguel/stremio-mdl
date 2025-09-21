@@ -1,9 +1,8 @@
 import * as cheerio from "cheerio";
-import { MdlTitleResponse } from "../../mdl-api/types";
-import { MetaPreview, ContentType } from "stremio-addon-sdk";
-import { searchCinemeta } from "../../cinemeta";
+import { MdlTitleResponse } from "../types";
+import { buildCatalog } from "@/lib/stremio";
 
-type UserListTableRow = {
+export type UserListTableRow = {
   id: number;
   position: number;
   title: string;
@@ -47,29 +46,6 @@ export async function getListDetails(
   );
 
   return { owner, title, totalItems };
-}
-
-// todo: move this to a stremio folder probably
-export async function buildCatalog(
-  list: UserListTableRow[]
-): Promise<MetaPreview[]> {
-  const promises = list.map(async (row): Promise<MetaPreview> => {
-    // todo: probably use content_type here
-    const type = row.type === "Movie" ? "movie" : ("series" as ContentType);
-
-    // todo: allow number in cinemeta search
-    console.log(row);
-    const id = await searchCinemeta(row.title, type, row.year?.toString());
-
-    return {
-      id,
-      type,
-      name: row.title,
-      poster: row.poster,
-    };
-  });
-
-  return await Promise.all(promises);
 }
 
 export async function getUserListMeta(id: string, subcategory: string) {

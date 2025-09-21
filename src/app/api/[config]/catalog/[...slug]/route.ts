@@ -1,6 +1,7 @@
-import { ConfigUserData, decode } from "@/lib/config";
-import { getListMeta } from "@/lib/mdl/parsers/list";
+import { ConfigUserData } from "@/lib/config";
 import { getUserListMeta } from "@/lib/mdl/parsers/dramalist";
+import { getListMeta } from "@/lib/mdl/parsers/list";
+import { decode } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { MetaPreview } from "stremio-addon-sdk";
 
@@ -31,7 +32,7 @@ export async function GET(
   { params }: { params: Promise<{ config: string; slug: string[] }> }
 ) {
   const { config } = await params;
-  const userData = decode(config);
+  const userData = decode<ConfigUserData>(config);
 
   const metas = await getCatalog(userData);
   return NextResponse.json({ metas }, { headers: CORS_HEADERS });

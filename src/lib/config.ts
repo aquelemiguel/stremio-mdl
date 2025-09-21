@@ -1,7 +1,4 @@
-import {
-  compressToEncodedURIComponent,
-  decompressFromEncodedURIComponent,
-} from "lz-string";
+import { encode } from "./utils";
 
 export function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL || "";
@@ -13,15 +10,6 @@ export type ConfigUserData = {
   subcategory: string; // todo: make type more strict
 };
 
-// todo: move encode/decode somewhere else probably...
-export function encode(userData: ConfigUserData): string {
-  return compressToEncodedURIComponent(JSON.stringify(userData));
-}
-
-export function decode(str: string): ConfigUserData {
-  return JSON.parse(decompressFromEncodedURIComponent(str));
-}
-
 export function getStremioDeepLink(userData: ConfigUserData): string {
   const baseUrl = getBaseUrl().replace(/https?:\/\//, "");
   const encoded = encode(userData);
@@ -29,7 +17,6 @@ export function getStremioDeepLink(userData: ConfigUserData): string {
   return `stremio://${baseUrl}/api/${encoded}/manifest.json`;
 }
 
-// todo: maybe this is more of an util
 export function getWebInstallLink(userData: ConfigUserData): string {
   const baseUrl = "http://web.stremio.com/#/addons";
   const addonUrl = getManifestUrl(userData);

@@ -1,7 +1,8 @@
-import { decode } from "@/lib/config";
+import { ConfigUserData } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
-import { getUserHandle } from "@/lib/mdl/parsers/profile";
 import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
+import { getUserHandle } from "@/lib/mdl/parsers/profile";
+import { decode } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {
@@ -16,7 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ config: string }> }
 ) {
   const { config } = await params;
-  const { id, category } = decode(config);
+  const { id, category } = decode<ConfigUserData>(config);
 
   let title = "";
 
