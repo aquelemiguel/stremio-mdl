@@ -1,6 +1,6 @@
 import { ConfigUserData, decode } from "@/lib/config";
-import { getListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { getUserListMeta } from "@/lib/parsers/mdl-user-lists";
+import { getListMeta } from "@/lib/mdl/parsers/list";
+import { getUserListMeta } from "@/lib/mdl/parsers/dramalist";
 import { NextRequest, NextResponse } from "next/server";
 import { MetaPreview } from "stremio-addon-sdk";
 

@@ -23,7 +23,6 @@ import {
   getStremioDeepLink,
   getWebInstallLink,
 } from "@/lib/config";
-import { type MdlCustomListMeta } from "@/lib/parsers/mdl-custom-lists";
 import {
   Check,
   Clipboard,

@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import type { ContentType, MetaPreview } from "stremio-addon-sdk";
-import { searchCinemeta } from "../cinemeta";
+import { searchCinemeta } from "../../cinemeta";
 
 export type MdlSimpleCustomListMeta = {
   type: "shows" | "people";

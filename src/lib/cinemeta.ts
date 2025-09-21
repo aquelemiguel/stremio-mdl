@@ -1,5 +1,5 @@
 import { ContentType } from "stremio-addon-sdk";
-import { getContentMeta } from "./parsers/mdl-custom-lists";
+import { getContentMeta } from "./mdl/parsers/list";
 
 type CinemetaResponse = {
   metas: {

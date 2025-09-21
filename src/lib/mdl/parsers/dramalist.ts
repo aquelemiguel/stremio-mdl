@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
-import { MdlTitleResponse } from "../mdl-api/types";
+import { MdlTitleResponse } from "../../mdl-api/types";
 import { MetaPreview, ContentType } from "stremio-addon-sdk";
-import { searchCinemeta } from "../cinemeta";
+import { searchCinemeta } from "../../cinemeta";
 
 type UserListTableRow = {
   id: number;
@@ -47,17 +47,6 @@ export async function getListDetails(
   );
 
   return { owner, title, totalItems };
-}
-
-// todo: this does not belong here
-export async function getUserHandle(id: string): Promise<string> {
-  const res = await fetch(`https://mydramalist.com/profile/${id}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status}`);
-  }
-
-  const $ = cheerio.load(await res.text());
-  return $(".profile-header h1").text();
 }
 
 // todo: move this to a stremio folder probably

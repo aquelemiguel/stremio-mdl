@@ -1,7 +1,7 @@
 import { decode } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
-import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { getUserHandle } from "@/lib/parsers/mdl-user-lists";
+import { getUserHandle } from "@/lib/mdl/parsers/profile";
+import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
 import { NextResponse } from "next/server";
 
 const CORS_HEADERS = {

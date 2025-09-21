@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
-import { getListDetails } from "@/lib/parsers/mdl-user-lists";
+import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
+import { getListDetails } from "@/lib/mdl/parsers/dramalist";
 
 type ValidateResponse = NextResponse<{ valid: boolean }>;
 
