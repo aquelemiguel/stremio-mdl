@@ -23,6 +23,32 @@ function getProgress(seen: number, total: number): number {
   return (seen / total) * 100;
 }
 
+export async function getListDetails(
+  id: string,
+  subcategory: string
+): Promise<{ owner: string; title: string; totalItems: number }> {
+  const res = await fetch(
+    `https://mydramalist.com/dramalist/${id}/${subcategory}`
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  const owner = $("h1.mdl-style-header a").text();
+  const title = $("li.nav-item.active > a").text();
+
+  if (!$(".mdl-style-list").length) {
+    return { owner, title, totalItems: 0 };
+  }
+
+  const totalItems = parseInt(
+    $(".mdl-style-table tbody tr:last-child > th").text()
+  );
+
+  return { owner, title, totalItems };
+}
+
 // todo: this does not belong here
 export async function getUserHandle(id: string): Promise<string> {
   const res = await fetch(`https://mydramalist.com/profile/${id}`);

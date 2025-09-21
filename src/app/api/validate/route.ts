@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSimpleListMeta } from "@/lib/parsers/mdl-custom-lists";
+import { getListDetails } from "@/lib/parsers/mdl-user-lists";
 
 type ValidateResponse = NextResponse<{ valid: boolean }>;
 
@@ -33,7 +34,13 @@ async function handleUserList(
         { status: res.status }
       );
     }
-    return NextResponse.json({ valid: true });
+
+    const details = await getListDetails(id, subcategory);
+
+    return NextResponse.json({
+      valid: true,
+      info: `${details.owner} (${details.title}) - ${details.totalItems} shows`,
+    });
   } catch {
     return NextResponse.json(
       {
@@ -81,6 +88,7 @@ async function handleCustomList(id: string): Promise<ValidateResponse> {
     }
     return NextResponse.json({
       valid: true,
+      info: `${meta.title} - ${meta.totalItems} shows`,
     });
   } catch {
     return NextResponse.json(
@@ -108,10 +116,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (category === "user") {
-    return handleUserList(id, subcategory);
+    return await handleUserList(id, subcategory);
   }
   if (category === "custom") {
-    return handleCustomList(id);
+    return await handleCustomList(id);
   }
 
   return NextResponse.json(

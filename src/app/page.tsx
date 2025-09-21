@@ -74,9 +74,10 @@ const mdlUserListTypes: MdlUserListType[] = [
 export default function Home() {
   const [isValidating, setIsValidating] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
-  const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
-  const [meta, setMeta] = useState<MdlCustomListMeta | null>(null);
+
+  const [error, setError] = useState<string>();
+  const [info, setInfo] = useState<string>();
 
   const [category, setCategory] = useState<"user" | "custom">();
   const [subcategory, setSubcategory] = useState<string>();
@@ -86,24 +87,24 @@ export default function Home() {
     setCanInstall(false);
 
     if (!id || !category || !subcategory) {
-      setMeta(null);
+      setInfo(undefined);
       setIsValidating(false);
       setError("");
       return;
     }
 
     setIsValidating(true);
-    setMeta(null);
+    setInfo(undefined);
 
     const timeout = setTimeout(async () => {
       try {
         const res = await fetch(
           `/api/validate?category=${category}&subcategory=${subcategory}&id=${id}`
         );
-        const { valid, error, meta } = await res.json();
+        const { valid, error, info } = await res.json();
         setCanInstall(valid);
         setError(error);
-        setMeta(meta || null);
+        setInfo(info || undefined);
       } catch {
         setCanInstall(false);
       } finally {
@@ -119,9 +120,6 @@ export default function Home() {
     const match = url.match(
       /mydramalist\.com\/(list|dramalist|profile)\/(\w+)/
     );
-
-    setCategory(undefined);
-    setSubcategory(undefined);
 
     if (!match) {
       return;
@@ -236,10 +234,10 @@ export default function Home() {
           </Select>
         </div>
 
-        {meta && (
+        {info && (
           <p className="mb-6 flex items-center gap-1 mt-2 text-xs text-gray-500 font-medium">
             <Check size={12} color="green" />
-            {meta.title} ({meta.totalItems} shows)
+            {info}
           </p>
         )}
 
