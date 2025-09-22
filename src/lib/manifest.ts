@@ -31,8 +31,8 @@ export async function buildManifest(catalog?: string): Promise<Manifest> {
         name: catalog,
         extra: [
           {
-            name: "genre",
-            options: ["All", "Sort: A-Z", "Sort: Z-A"],
+            name: "skip",
+            isRequired: false,
           },
         ],
       },
