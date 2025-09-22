@@ -60,8 +60,8 @@ async function getSingleCatalogItem(
     "f.jpg"
   ); // up the quality
 
-  const id = await searchCinemeta(name, type, parseInt(year), url);
-  return { id, type, name, poster };
+  const imdbId = await searchCinemeta(name, type, parseInt(year), url);
+  return { id: imdbId, type, name, poster };
 }
 
 export async function getCatalogPage(
