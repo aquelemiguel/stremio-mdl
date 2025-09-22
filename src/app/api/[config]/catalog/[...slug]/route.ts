@@ -1,6 +1,6 @@
 import { ConfigUserData } from "@/lib/config";
-import { getUserListMeta } from "@/lib/mdl/parsers/dramalist";
-import { getCatalogPage } from "@/lib/mdl/parsers/list";
+import { getCatalogPage as getUserCatalogPage } from "@/lib/mdl/parsers/dramalist";
+import { getCatalogPage as getCustomCatalogPage } from "@/lib/mdl/parsers/list";
 import { decode } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { MetaPreview } from "stremio-addon-sdk";
@@ -22,10 +22,10 @@ async function getCatalog(
   skip = 0
 ): Promise<MetaPreview[]> {
   if (category === "custom") {
-    return await getCatalogPage(id, skip);
+    return await getCustomCatalogPage(id, skip);
   }
   if (category === "user") {
-    return await getUserListMeta(id, subcategory);
+    return await getUserCatalogPage(id, subcategory, skip);
   }
   return [];
 }

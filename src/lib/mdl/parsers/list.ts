@@ -68,7 +68,7 @@ export async function getCatalogPage(
   id: string,
   skip: number
 ): Promise<MetaPreview[]> {
-  const items: MetaPreview[] = []; // todo: should be more generic to user lists
+  const items: MetaPreview[] = [];
 
   // each mdl page has 100 items
   // we can pre-calculate the starting page

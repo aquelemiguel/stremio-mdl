@@ -1,25 +1,56 @@
 import * as cheerio from "cheerio";
 import { MdlTitleResponse } from "../types";
-import { buildCatalog } from "@/lib/stremio";
+import { ContentType, MetaPreview } from "stremio-addon-sdk";
+import { CATALOG_PAGE_SIZE } from "@/lib/settings";
+import { searchCinemeta } from "@/lib/cinemeta";
 
-export type UserListTableRow = {
-  id: number;
-  position: number;
-  title: string;
-  href: string;
-  country: string;
-  year?: number;
-  type: string;
-  score: number;
-  progress: number; // % between watched and total eps
-  poster: string;
-};
-
-function getProgress(seen: number, total: number): number {
-  if (total === 0) {
-    return 0;
+async function getSingleCatalogItem(id: string): Promise<MetaPreview> {
+  const res = await fetch(`https://mydramalist.com/v1/titles/${id}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
   }
-  return (seen / total) * 100;
+
+  const data: MdlTitleResponse = await res.json();
+
+  const type = data.type === "Movie" ? "movie" : ("series" as ContentType);
+  const imdbId = await searchCinemeta(data.title, type, data.year);
+
+  return {
+    id: imdbId,
+    type,
+    name: data.title,
+    poster: data.cover,
+  };
+}
+
+export async function getCatalogPage(
+  id: string,
+  subcategory: string,
+  skip: number
+): Promise<MetaPreview[]> {
+  const res = await fetch(
+    `https://mydramalist.com/dramalist/${id}/${subcategory}`
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const $ = cheerio.load(await res.text());
+  const allEntries = $("tbody tr").toArray();
+
+  const entries = allEntries.slice(
+    skip,
+    Math.min(skip + CATALOG_PAGE_SIZE, allEntries.length)
+  );
+
+  const promises = entries.map(async (el) => {
+    const $ = cheerio.load(el);
+    const id = ($(el).attr("id") || "").replace("ml", "");
+
+    return await getSingleCatalogItem(id);
+  });
+
+  return await Promise.all(promises);
 }
 
 export async function getListDetails(
@@ -46,50 +77,4 @@ export async function getListDetails(
   );
 
   return { owner, title, totalItems };
-}
-
-export async function getUserListMeta(id: string, subcategory: string) {
-  const res = await fetch(
-    `https://mydramalist.com/dramalist/${id}/${subcategory}`
-  );
-  if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status}`);
-  }
-
-  const $ = cheerio.load(await res.text());
-
-  const promises = $("tbody tr")
-    .map((_, el) => {
-      const $ = cheerio.load(el);
-      const id = ($(el).attr("id") || "").replace("ml", "");
-
-      return (async () => {
-        const res = await fetch(`https://mydramalist.com/v1/titles/${id}`);
-        if (!res.ok) {
-          throw new Error(`Failed to fetch: ${res.status}`);
-        }
-
-        const data: MdlTitleResponse = await res.json();
-
-        return {
-          id: data.id,
-          position: parseInt($("th").text().trim() || "") || 0,
-          title: data.title,
-          href: data.url,
-          country: data.country,
-          year: data.year,
-          type: data.type,
-          score: parseFloat($("td.sort5 .score").text().trim() || "0") || 0,
-          progress: getProgress(
-            parseFloat($("td.sort6 .episode-seen").text().trim() || "0"),
-            parseFloat($("td.sort6 .episode-total").text().trim() || "0")
-          ),
-          poster: data.cover,
-        };
-      })();
-    })
-    .toArray();
-
-  const rows = await Promise.all(promises);
-  return await buildCatalog(rows);
 }
