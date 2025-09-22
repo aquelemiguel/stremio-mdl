@@ -1,6 +1,6 @@
 import { ConfigUserData } from "@/lib/config";
-import { getUserListMeta } from "@/lib/mdl/parsers/dramalist";
-import { getListMeta } from "@/lib/mdl/parsers/list";
+import { getCatalogPage as getUserCatalogPage } from "@/lib/mdl/parsers/dramalist";
+import { getCatalogPage as getCustomCatalogPage } from "@/lib/mdl/parsers/list";
 import { decode } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { MetaPreview } from "stremio-addon-sdk";
@@ -12,28 +12,36 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400",
 };
 
-async function getCatalog({
-  id,
-  category,
-  subcategory,
-}: ConfigUserData): Promise<MetaPreview[]> {
+function parseExtra(extra: string) {
+  const [key, value] = extra.replace(".json", "").split("=");
+  return { [key]: value };
+}
+
+async function getCatalog(
+  { id, category, subcategory }: ConfigUserData,
+  skip = 0
+): Promise<MetaPreview[]> {
   if (category === "custom") {
-    const { items } = await getListMeta(id);
-    return items.map(({ meta }) => meta);
+    return await getCustomCatalogPage(id, skip);
   }
   if (category === "user") {
-    return await getUserListMeta(id, subcategory);
+    return await getUserCatalogPage(id, subcategory, skip);
   }
   return [];
 }
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: Promise<{ config: string; slug: string[] }> }
+  { params }: { params: Promise<{ config: string; slug?: string[] }> }
 ) {
-  const { config } = await params;
+  const { config, slug = [] } = await params;
   const userData = decode<ConfigUserData>(config);
+  const extra = parseExtra(slug[2] ?? "");
 
-  const metas = await getCatalog(userData);
+  const metas = await getCatalog(
+    userData,
+    "skip" in extra ? parseInt(extra["skip"], 10) : 0
+  );
+
   return NextResponse.json({ metas }, { headers: CORS_HEADERS });
 }

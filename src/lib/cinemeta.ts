@@ -12,7 +12,7 @@ type CinemetaResponse = {
 function findByReleaseYear(
   metas: CinemetaResponse["metas"],
   releaseYear?: number
-) {
+): string | undefined {
   if (releaseYear === undefined) {
     return undefined;
   }
@@ -36,7 +36,8 @@ export async function searchCinemeta(
     `${url}/search=${encodeURIComponent(sanitized)}.json`
   );
   if (!res.ok) {
-    throw new Error(`failed to fetch: ${res.status}`);
+    console.log(`Cinemeta timed out while querying: ${sanitized}`); // todo: retry request
+    return "";
   }
 
   const { metas }: CinemetaResponse = await res.json();

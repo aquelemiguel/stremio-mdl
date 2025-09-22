@@ -1,4 +1,6 @@
+import { CATALOG_PAGE_SIZE } from "@/lib/settings";
 import * as cheerio from "cheerio";
+import { AnyNode } from "domhandler";
 import type { ContentType, MetaPreview } from "stremio-addon-sdk";
 import { searchCinemeta } from "../../cinemeta";
 
@@ -21,65 +23,83 @@ export type MdlContentMeta = {
   originalTitle: string;
 };
 
-export async function getListMeta(id: string): Promise<MdlCustomListMeta> {
-  const simpleMeta = await getSimpleListMeta(id);
-  const items: MdlCustomListItem[] = [];
+const typeMap: Record<string, ContentType> = {
+  drama: "series",
+  movie: "movie",
+  "tv show": "series",
+  special: "series",
+};
 
-  for (let page = 1; (page - 1) * 100 <= simpleMeta.totalItems; page++) {
-    const url = `https://mydramalist.com/list/${id}?page=${page}`;
-    const res = await fetch(url);
+async function getPage(id: string, page: number): Promise<cheerio.CheerioAPI> {
+  const url = `https://mydramalist.com/list/${id}?page=${page}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
 
-    if (!res.ok) {
-      throw new Error(`failed to fetch: ${res.status}`);
-    }
+  return cheerio.load(await res.text());
+}
 
-    const $ = cheerio.load(await res.text());
-    const els = $("li[id^='mdl']").toArray();
+async function getSingleCatalogItem(
+  $: cheerio.Cheerio<AnyNode>
+): Promise<MetaPreview> {
+  const name = $.find(".title > a").text();
+  const description = $.find(".content .title + *").text();
+  const url = $.find(".title > a").attr("href") || "";
 
-    const promises = els.map(async (el): Promise<MdlCustomListItem> => {
-      const name = $(el).find(".title > a").text();
-      const description = $(el).find(".content .title + *").text();
-      const url = $(el).find(".title > a").attr("href") || "";
+  const match = description.match(/(\w+)\s(\w+) - (\d+)/);
+  if (!match) {
+    throw new Error("Could not determine media type");
+  }
 
-      const match = description.match(/(\w+)\s(\w+) - (\d+)/);
-      if (!match) {
-        throw new Error("Could not determine media type");
-      }
+  const [, , mdlType, year] = match;
+  const type = typeMap[mdlType.toLowerCase()] || "series";
 
-      const typeMap: Record<string, ContentType> = {
-        drama: "series",
-        movie: "movie",
-        "tv show": "series",
-        special: "series",
-      };
+  const poster = ($.find("a.film-cover > img").attr("data-src") || "").replace(
+    "t.jpg",
+    "f.jpg"
+  ); // up the quality
 
-      const [, , mdlType, releaseYear] = match;
-      const type = typeMap[mdlType.toLowerCase()] || "series";
+  const imdbId = await searchCinemeta(name, type, parseInt(year), url);
+  return { id: imdbId, type, name, poster };
+}
 
-      let poster = $(el).find("a.film-cover > img").attr("data-src") || "";
-      poster = poster.replace("t.jpg", "f.jpg"); // up the quality
+export async function getCatalogPage(
+  id: string,
+  skip: number
+): Promise<MetaPreview[]> {
+  const items: MetaPreview[] = [];
 
-      const id = await searchCinemeta(name, type, releaseYear, url);
+  // each mdl page has 100 items
+  // we can pre-calculate the starting page
+  let page = Math.floor(skip / 100) + 1;
+  let offset = skip % 100;
 
-      return {
-        meta: {
-          id,
-          type,
-          name,
-          poster,
-        },
-        url,
-      };
-    });
+  while (items.length < CATALOG_PAGE_SIZE) {
+    const $ = await getPage(id, page);
+    const allEntries = $("li[id^='mdl']").toArray();
+
+    const entries = allEntries.slice(
+      offset,
+      Math.min(offset + (CATALOG_PAGE_SIZE - items.length), allEntries.length)
+    );
+
+    const promises = entries.map(
+      async (el): Promise<MetaPreview> => await getSingleCatalogItem($(el))
+    );
 
     const pageItems = await Promise.all(promises);
     items.push(...pageItems);
+
+    if ($("ul.pagination > li.next").length === 0) {
+      return items;
+    }
+
+    page++;
+    offset = 0;
   }
 
-  return {
-    ...simpleMeta,
-    items,
-  };
+  return items;
 }
 
 export async function getSimpleListMeta(
