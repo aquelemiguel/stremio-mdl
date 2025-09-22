@@ -66,7 +66,7 @@ async function getSingleCatalogItem(
 
 export async function getCatalogPage(
   id: string,
-  skip = 0
+  skip: number
 ): Promise<MetaPreview[]> {
   const items: MetaPreview[] = []; // todo: should be more generic to user lists
 
