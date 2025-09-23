@@ -36,7 +36,7 @@ export async function searchCinemeta(
     `${url}/search=${encodeURIComponent(sanitized)}.json`
   );
   if (!res.ok) {
-    console.log(`Cinemeta timed out while querying: ${sanitized}`); // todo: retry request
+    console.error(`Cinemeta timed out while querying: ${sanitized}`); // todo: retry request
     return "";
   }
 

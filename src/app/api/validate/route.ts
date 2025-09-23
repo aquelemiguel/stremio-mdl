@@ -1,55 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
 import { getListDetails } from "@/lib/mdl/parsers/dramalist";
+import { MdlListStageMeta, MdlListSubtype, MdlListType } from "@/lib/config";
 
 type ValidateResponse = NextResponse<{ valid: boolean }>;
 
 async function handleUserList(
   id: string,
-  subcategory: string
+  subtype: MdlListSubtype
 ): Promise<
   NextResponse<{
     valid: boolean;
   }>
 > {
-  try {
-    const res = await fetch(
-      `https://mydramalist.com/dramalist/${id}/${subcategory}`
-    );
-    if (res.status === 404) {
-      return NextResponse.json(
-        {
-          valid: false,
-          error: "Could not find list, is it private?",
-        },
-        { status: 404 }
-      );
-    }
-    if (!res.ok) {
-      return NextResponse.json(
-        {
-          valid: false,
-          error: `Error: ${res.status}`,
-        },
-        { status: res.status }
-      );
-    }
+  const { slug } = MdlListStageMeta[subtype];
 
-    const details = await getListDetails(id, subcategory);
-
-    return NextResponse.json({
-      valid: true,
-      info: `${details.owner} (${details.title}) - ${details.totalItems} shows`,
-    });
-  } catch {
+  const res = await fetch(`https://mydramalist.com/dramalist/${id}/${slug}`);
+  if (res.status === 404) {
     return NextResponse.json(
       {
         valid: false,
-        error: "Network error",
+        error: "Could not find list, is it private?",
       },
-      { status: 500 }
+      { status: 404 }
     );
   }
+  if (!res.ok) {
+    return NextResponse.json(
+      {
+        valid: false,
+        error: `Error: ${res.status}`,
+      },
+      { status: res.status }
+    );
+  }
+
+  const details = await getListDetails(id, subtype);
+
+  return NextResponse.json({
+    valid: true,
+    info: `${details.owner} (${details.title}) - ${details.totalItems} shows`,
+  });
 }
 
 async function handleCustomList(id: string): Promise<ValidateResponse> {
@@ -104,29 +95,25 @@ async function handleCustomList(id: string): Promise<ValidateResponse> {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const category = searchParams.get("category");
-  const subcategory = searchParams.get("subcategory");
+  const type = searchParams.get("t");
   const id = searchParams.get("id");
 
-  if (!category || !subcategory || !id) {
+  if (!type || !id) {
     return NextResponse.json(
       { valid: false, error: "Missing required params!" },
       { status: 400 }
     );
   }
 
-  if (category === "user") {
-    return await handleUserList(id, subcategory);
-  }
-  if (category === "custom") {
-    return await handleCustomList(id);
-  }
+  switch (Number(type)) {
+    case MdlListType.User:
+      const subtype = searchParams.get("st");
+      return await handleUserList(id, Number(subtype));
 
-  return NextResponse.json(
-    {
-      valid: false,
-      error: "Received unknown type of list!",
-    },
-    { status: 400 }
-  );
+    case MdlListType.Custom:
+      return await handleCustomList(id);
+
+    default:
+      throw new Error("Unknown type");
+  }
 }
