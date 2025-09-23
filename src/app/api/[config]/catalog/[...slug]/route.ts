@@ -1,4 +1,4 @@
-import { ConfigUserData } from "@/lib/config";
+import { ConfigUserData, MdlListType } from "@/lib/config";
 import { getCatalogPage as getUserCatalogPage } from "@/lib/mdl/parsers/dramalist";
 import { getCatalogPage as getCustomCatalogPage } from "@/lib/mdl/parsers/list";
 import { decode } from "@/lib/utils";
@@ -18,16 +18,23 @@ function parseExtra(extra: string) {
 }
 
 async function getCatalog(
-  { id, category, subcategory }: ConfigUserData,
+  config: ConfigUserData,
   skip = 0
 ): Promise<MetaPreview[]> {
-  if (category === "custom") {
-    return await getCustomCatalogPage(id, skip);
+  const { id, type } = config;
+
+  switch (type) {
+    case MdlListType.User:
+      const { subtype } = config;
+      return await getUserCatalogPage(id, subtype, skip);
+
+    case MdlListType.Custom:
+      return await getCustomCatalogPage(id, skip);
+
+    default:
+      console.error("Unknown list type");
+      return [];
   }
-  if (category === "user") {
-    return await getUserCatalogPage(id, subcategory, skip);
-  }
-  return [];
 }
 
 export async function GET(

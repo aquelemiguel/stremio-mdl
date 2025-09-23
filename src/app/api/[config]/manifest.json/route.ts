@@ -1,4 +1,4 @@
-import { ConfigUserData } from "@/lib/config";
+import { ConfigUserData, MdlListType } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
 import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
 import { getUserHandle } from "@/lib/mdl/parsers/profile";
@@ -17,17 +17,21 @@ export async function GET(
   { params }: { params: Promise<{ config: string }> }
 ) {
   const { config } = await params;
-  const { id, category } = decode<ConfigUserData>(config);
+  const { id, type } = decode<ConfigUserData>(config);
 
   let title = "";
 
-  if (category === "custom") {
-    const meta = await getSimpleListMeta(id);
-    title = meta.title;
-  } else if (category === "user") {
-    title = await getUserHandle(id);
-  } else {
-    throw new Error("Wrong category!");
+  switch (type) {
+    case MdlListType.User:
+      title = await getUserHandle(id);
+      break;
+
+    case MdlListType.Custom:
+      title = (await getSimpleListMeta(id)).title;
+      break;
+
+    default:
+      throw new Error("Unknown list type");
   }
 
   const manifest = await buildManifest(title);

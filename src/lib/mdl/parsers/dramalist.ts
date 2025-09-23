@@ -3,6 +3,7 @@ import { MdlTitleResponse } from "../types";
 import { ContentType, MetaPreview } from "stremio-addon-sdk";
 import { CATALOG_PAGE_SIZE } from "@/lib/settings";
 import { searchCinemeta } from "@/lib/cinemeta";
+import { MdlListStageMeta, MdlListSubtype } from "@/lib/config";
 
 async function getSingleCatalogItem(id: string): Promise<MetaPreview> {
   const res = await fetch(`https://mydramalist.com/v1/titles/${id}`);
@@ -25,12 +26,12 @@ async function getSingleCatalogItem(id: string): Promise<MetaPreview> {
 
 export async function getCatalogPage(
   id: string,
-  subcategory: string,
+  subtype: MdlListSubtype,
   skip: number
 ): Promise<MetaPreview[]> {
-  const res = await fetch(
-    `https://mydramalist.com/dramalist/${id}/${subcategory}`
-  );
+  const { slug } = MdlListStageMeta[subtype];
+
+  const res = await fetch(`https://mydramalist.com/dramalist/${id}/${slug}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch: ${res.status}`);
   }
@@ -55,11 +56,11 @@ export async function getCatalogPage(
 
 export async function getListDetails(
   id: string,
-  subcategory: string
+  subtype: MdlListSubtype
 ): Promise<{ owner: string; title: string; totalItems: number }> {
-  const res = await fetch(
-    `https://mydramalist.com/dramalist/${id}/${subcategory}`
-  );
+  const { slug } = MdlListStageMeta[subtype];
+
+  const res = await fetch(`https://mydramalist.com/dramalist/${id}/${slug}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch: ${res.status}`);
   }

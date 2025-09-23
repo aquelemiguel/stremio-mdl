@@ -19,9 +19,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  ConfigUserData,
   getManifestUrl,
   getStremioDeepLink,
   getWebInstallLink,
+  MdlListStageMeta,
+  MdlListSubtype,
+  MdlListType,
 } from "@/lib/config";
 import {
   Check,
@@ -34,41 +38,25 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type MdlUserListType = {
-  name: string;
-  path: string;
-};
+function buildUserData(
+  id: string,
+  type: MdlListType | null,
+  subtype: MdlListSubtype | null
+): ConfigUserData | null {
+  if (!id || type === null) {
+    return null;
+  }
+  if (type === MdlListType.User) {
+    if (subtype === null) {
+      return null;
+    }
+    return { id, type, subtype };
+  } else if (type === MdlListType.Custom) {
+    return { id, type };
+  }
 
-const mdlUserListTypes: MdlUserListType[] = [
-  {
-    name: "Watching",
-    path: "watching",
-  },
-  {
-    name: "Completed",
-    path: "completed",
-  },
-  {
-    name: "On Hold",
-    path: "on_hold",
-  },
-  {
-    name: "Dropped",
-    path: "dropped",
-  },
-  {
-    name: "Plan to Watch",
-    path: "plan_to_watch",
-  },
-  {
-    name: "Undecided",
-    path: "undecided",
-  },
-  {
-    name: "Not Interested",
-    path: "not_interested",
-  },
-];
+  return null;
+}
 
 export default function Home() {
   const [isValidating, setIsValidating] = useState(false);
@@ -78,32 +66,49 @@ export default function Home() {
   const [error, setError] = useState<string>();
   const [info, setInfo] = useState<string>();
 
-  const [category, setCategory] = useState<"user" | "custom">();
-  const [subcategory, setSubcategory] = useState<string>();
+  const [type, setType] = useState<MdlListType | null>(null);
+  const [subtype, setSubtype] = useState<MdlListSubtype | null>(null);
   const [id, setId] = useState<string>("");
+
+  const withUserData = (action: (userData: ConfigUserData) => void) => {
+    return () => {
+      const userData = buildUserData(id, type, subtype);
+      if (!userData) {
+        return;
+      }
+      action(userData);
+    };
+  };
 
   useEffect(() => {
     setCanInstall(false);
+    setError(""); // immediately cleanup error, new validation
+    setInfo("");
 
-    if (!id || !category || !subcategory) {
-      setInfo(undefined);
+    if (
+      !id ||
+      type === null ||
+      (type === MdlListType.User && subtype === null)
+    ) {
       setIsValidating(false);
-      setError("");
       return;
     }
 
     setIsValidating(true);
-    setInfo(undefined);
 
     const timeout = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/validate?category=${category}&subcategory=${subcategory}&id=${id}`
-        );
+        const query = new URLSearchParams({
+          id,
+          t: type.toString(),
+          ...(subtype ? { st: subtype.toString() } : {}),
+        });
+        const res = await fetch(`/api/validate?${query.toString()}`);
         const { valid, error, info } = await res.json();
+
         setCanInstall(valid);
         setError(error);
-        setInfo(info || undefined);
+        setInfo(info);
       } catch {
         setCanInstall(false);
       } finally {
@@ -112,7 +117,7 @@ export default function Home() {
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [category, subcategory, id]);
+  }, [id, type, subtype]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
@@ -121,53 +126,37 @@ export default function Home() {
     );
 
     if (!match) {
+      setType(null);
+      setSubtype(null);
+      setId("");
+      setError("");
+      setInfo("");
       return;
     }
 
-    const [, category, id] = match;
-
-    switch (category) {
-      case "list":
-        setCategory("custom");
-        setSubcategory("custom");
-        break;
-
-      case "dramalist":
-      case "profile":
-        setCategory("user");
-        break;
-    }
-
-    setId(id);
+    setId(match[2]);
+    setType(match[1] === "list" ? MdlListType.Custom : MdlListType.User);
+    setSubtype(null);
   };
 
   const onInstall = () => {
-    if (!id || !category || !subcategory) {
-      return;
-    }
-    const installUrl = getStremioDeepLink({ id, category, subcategory });
-    window.location.href = installUrl;
+    withUserData((userData) => {
+      window.location.href = getStremioDeepLink(userData);
+    })();
   };
 
   const onWebInstall = async () => {
-    if (!id || !category || !subcategory) {
-      return;
-    }
-    const installUrl = getWebInstallLink({ id, category, subcategory });
-    open(installUrl);
+    withUserData((userData) => {
+      open(getWebInstallLink(userData));
+    })();
   };
 
   const onClipboard = async () => {
-    if (!id || !category || !subcategory) {
-      return;
-    }
-    const manifestUrl = getManifestUrl({ id, category, subcategory });
-    await navigator.clipboard.writeText(manifestUrl);
-    setIsCopied(true);
-
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 5000);
+    withUserData(async (userData) => {
+      await navigator.clipboard.writeText(getManifestUrl(userData));
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 5000);
+    })();
   };
 
   return (
@@ -210,27 +199,29 @@ export default function Home() {
             placeholder="Paste your link here..."
             onChange={onChange}
           />
-          <Select
-            value={subcategory}
-            onValueChange={(value) => setSubcategory(value)}
-          >
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {category === "custom" ? (
-                <SelectItem key="custom" value="custom">
-                  Custom
-                </SelectItem>
-              ) : (
-                mdlUserListTypes.map(({ name, path }) => (
-                  <SelectItem key={path} value={path}>
-                    {name}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          {type === MdlListType.User && (
+            <div className="animate-in fade-in-0 zoom-in-95 duration-300">
+              <Select
+                value={subtype?.toString() ?? ""}
+                onValueChange={(value) =>
+                  setSubtype(value ? (parseInt(value) as MdlListSubtype) : null)
+                }
+              >
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(MdlListStageMeta).map(
+                    ([k, { label, slug }]) => (
+                      <SelectItem key={slug} value={k}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         {info && (
