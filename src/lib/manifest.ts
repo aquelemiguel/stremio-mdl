@@ -3,7 +3,7 @@ import { getBaseUrl } from "./config";
 
 const BASE_MANIFEST: Manifest = {
   id: "com.aquelemiguel.stremio-mdl",
-  version: "1.0.1",
+  version: "1.1.0",
   name: "MyDramaList",
   description: "Add MyDramaList lists as Stremio catalogs.",
   logo: `${getBaseUrl()}/logo.png`,
