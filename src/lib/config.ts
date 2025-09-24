@@ -19,7 +19,7 @@ export enum MdlListSubtype {
   NotInterested,
 }
 
-export const MdlListStageMeta: Record<
+export const MdlListSubtypeMeta: Record<
   MdlListSubtype,
   { label: string; slug: string }
 > = {
