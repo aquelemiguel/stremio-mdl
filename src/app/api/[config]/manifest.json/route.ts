@@ -1,4 +1,4 @@
-import { ConfigUserData, MdlListType } from "@/lib/config";
+import { ConfigUserData, MdlListSubtypeMeta, MdlListType } from "@/lib/config";
 import { buildManifest } from "@/lib/manifest";
 import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
 import { getUserHandle } from "@/lib/mdl/parsers/profile";
@@ -17,17 +17,20 @@ export async function GET(
   { params }: { params: Promise<{ config: string }> }
 ) {
   const { config } = await params;
-  const { id, type } = decode<ConfigUserData>(config);
+  const userData = decode<ConfigUserData>(config);
 
   let title = "";
 
-  switch (type) {
+  switch (userData.type) {
     case MdlListType.User:
-      title = await getUserHandle(id);
+      const { label } = MdlListSubtypeMeta[userData.subtype];
+      const userHandle = (title = await getUserHandle(userData.id));
+      console.log(`${userHandle}'s Watchlist (${label})`);
+      title = `${userHandle}'s Watchlist (${label})`;
       break;
 
     case MdlListType.Custom:
-      title = (await getSimpleListMeta(id)).title;
+      title = (await getSimpleListMeta(userData.id)).title;
       break;
 
     default:

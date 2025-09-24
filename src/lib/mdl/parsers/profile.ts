@@ -7,5 +7,5 @@ export async function getUserHandle(id: string): Promise<string> {
   }
 
   const $ = cheerio.load(await res.text());
-  return $(".profile-header h1").text();
+  return $(".profile-header h1").text().trim();
 }
