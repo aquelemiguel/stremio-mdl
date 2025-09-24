@@ -23,7 +23,7 @@ import {
   getManifestUrl,
   getStremioDeepLink,
   getWebInstallLink,
-  MdlListStageMeta,
+  MdlListSubtypeMeta,
   MdlListSubtype,
   MdlListType,
 } from "@/lib/config";
@@ -211,7 +211,7 @@ export default function Home() {
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(MdlListStageMeta).map(
+                  {Object.entries(MdlListSubtypeMeta).map(
                     ([k, { label, slug }]) => (
                       <SelectItem key={slug} value={k}>
                         {label}

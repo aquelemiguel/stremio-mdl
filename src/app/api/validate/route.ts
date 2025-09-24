@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSimpleListMeta } from "@/lib/mdl/parsers/list";
 import { getListDetails } from "@/lib/mdl/parsers/dramalist";
-import { MdlListStageMeta, MdlListSubtype, MdlListType } from "@/lib/config";
+import { MdlListSubtypeMeta, MdlListSubtype, MdlListType } from "@/lib/config";
 
 type ValidateResponse = NextResponse<{ valid: boolean }>;
 
@@ -13,7 +13,7 @@ async function handleUserList(
     valid: boolean;
   }>
 > {
-  const { slug } = MdlListStageMeta[subtype];
+  const { slug } = MdlListSubtypeMeta[subtype];
 
   const res = await fetch(`https://mydramalist.com/dramalist/${id}/${slug}`);
   if (res.status === 404) {

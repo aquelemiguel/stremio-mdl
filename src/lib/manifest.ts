@@ -1,5 +1,6 @@
 import { Manifest } from "stremio-addon-sdk";
 import { getBaseUrl } from "./config";
+import { randomUUID } from "crypto";
 
 const BASE_MANIFEST: Manifest = {
   id: "com.aquelemiguel.stremio-mdl",
@@ -26,7 +27,7 @@ export async function buildManifest(catalog?: string): Promise<Manifest> {
     ...BASE_MANIFEST,
     catalogs: [
       {
-        id: "mydramalist",
+        id: `mdl-${randomUUID()}`,
         type: "MyDramaList" as never, // bypass the default type
         name: catalog,
         extra: [
